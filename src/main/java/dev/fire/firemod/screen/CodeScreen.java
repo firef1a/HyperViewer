@@ -92,7 +92,7 @@ public class CodeScreen extends Screen {
         this.toolbar.addPreSibling(searchBarRect);
 
 
-        int searchbarMarginX = this.searchBarRect.width/15;
+        int searchbarMarginX = this.searchBarRect.width/15;;
         int searchbarMarginY = this.searchBarRect.height/10;
 
         RenderableRectangleObject searchBarWidgetRect = new RenderableRectangleObject(0, 0, this.searchBarRect.width-searchbarMarginX, this.searchBarRect.height-searchbarMarginY);
