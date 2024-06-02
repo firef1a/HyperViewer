@@ -1,0 +1,13 @@
+{
+	"required": true,
+	"package": "dev.fire.firemod.mixin",
+	"compatibilityLevel": "JAVA_17",
+	"mixins": [
+		"ExampleMixin",
+		"render.MMultiplayerScreen",
+		"render.MOptionsScreen"
+	],
+	"injectors": {
+		"defaultRequire": 1
+	}
+}
