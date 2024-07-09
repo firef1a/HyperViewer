@@ -26,10 +26,10 @@ public class MMultiplayerScreen extends Screen {
     }
     @Inject(at = @At("HEAD"), method = "init", cancellable = true)
     private void init(CallbackInfo ci) {
-        Firemod.LOGGER.info("Adding auth button to the multiplayer screen");
-        this.addDrawableChild(new BlendableTexturedButtonWidget(100, 5, 20, 20, identifier_main, identifier_main_highlight, (button) -> {
-            CodeScreen screen = new CodeScreen(Text.literal("hi"), this);
-            Firemod.MC.setScreen(screen);
-        }));
+        Firemod.LOGGER.info("testing");
+        //this.addDrawableChild(new BlendableTexturedButtonWidget(100, 5, 20, 20, identifier_main, identifier_main_highlight, (button) -> {
+        //    CodeScreen screen = new CodeScreen(Text.literal("hi"), this);
+        //    Firemod.MC.setScreen(screen);
+        //}));
     }
 }

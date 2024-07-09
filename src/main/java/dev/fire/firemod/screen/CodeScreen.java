@@ -1,27 +1,16 @@
 package dev.fire.firemod.screen;
 
-import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.fire.firemod.Firemod;
-import dev.fire.firemod.screen.utils.Point;
-import dev.fire.firemod.screen.utils.Rectangle;
-import dev.fire.firemod.screen.utils.RenderableRectangleObject;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
+import dev.fire.firemod.screen.utils.*;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
 import org.lwjgl.glfw.GLFW;
 
-import java.awt.*;
 import java.util.ArrayList;
-
-import static org.lwjgl.opengl.GL11.*;
+import java.util.Arrays;
 
 
 public class CodeScreen extends Screen {
@@ -41,9 +30,13 @@ public class CodeScreen extends Screen {
     public RenderableRectangleObject background;
     public RenderableRectangleObject toolbar;
     public RenderableRectangleObject sidebar;
-    public RenderableRectangleObject codespace;
+    public RenderableCodespaceObject codespace;
     public RenderableRectangleObject searchBarRect;
     public RenderableRectangleObject codespaceRect;
+    public RenderableRectangleObject functionsList;
+    public RenderableRectangleObject listRect;
+
+    public ArrayList<FunctionEntry> functionEntryList;
 
     public TextFieldWidget searchBar;
 
@@ -53,6 +46,8 @@ public class CodeScreen extends Screen {
     public int SEARCHBAR_MARGIN = 5;
 
     public int renderCycle = 1;
+
+    public int focusedFunctionTabIndex = 0;
 
     public CodeScreen(Text title, Screen parent) {
         super(title);
@@ -85,6 +80,9 @@ public class CodeScreen extends Screen {
         this.sidebar.setBinding(0,1);
         this.toolbar.addPreSibling(sidebar);
 
+
+
+
         // search bar
         this.searchBarRect = new RenderableRectangleObject(SEARCHBAR_MARGIN, this.toolbar.y+SEARCHBAR_MARGIN, SIDEBAR_WIDTH-SEARCHBAR_MARGIN*2, SEARCHBAR_HEIGHT, SEARCHBAR_COLOR);
         this.searchBarRect.setBinding(0,1);
@@ -92,28 +90,51 @@ public class CodeScreen extends Screen {
         this.toolbar.addPreSibling(searchBarRect);
 
 
-        int searchbarMarginX = this.searchBarRect.width/15;;
+        int searchbarMarginX = this.searchBarRect.width/12;
         int searchbarMarginY = this.searchBarRect.height/10;
 
         RenderableRectangleObject searchBarWidgetRect = new RenderableRectangleObject(0, 0, this.searchBarRect.width-searchbarMarginX, this.searchBarRect.height-searchbarMarginY);
         //searchBarWidgetRect.setCenter(searchBarRect.x+(searchBarRect.width/2), searchBarRect.y+(searchBarRect.height/2)+this.toolbar.height+(searchBarWidgetRect.height/3));
         Point center = searchBarRect.getScreenCenter();
-        searchBarWidgetRect.setCenter(center.x,center.y+(searchBarRect.height/3));
+        searchBarWidgetRect.setCenter(center.x, (int) (center.y+(searchBarRect.height/3)));
 
         this.searchBar = new TextFieldWidget(this.textRenderer, searchBarWidgetRect.x, searchBarWidgetRect.y,searchBarWidgetRect.width, searchBarWidgetRect.height, Text.literal("test"));
         this.searchBar.setDrawsBackground(false);
+        this.searchBar.getText();
 
         addDrawableChild(this.searchBar);
 
+        // function list
+        this.listRect = new RenderableRectangleObject(0,0,0,0);
+        this.sidebar.addSibling(listRect);
+        ArrayList<String> data = new ArrayList<String>(Arrays.asList(
+                new String("hello world!"),
+                new String("hello world, electric boogaloo"),
+                new String("the game is loading the game is loading the game is loading the game is loading the game is loading the game is loading the game is loading the game is loading the game is loading the game is loading the")
+        ));
+
+        this.functionEntryList = new ArrayList<FunctionEntry>(Arrays.asList(
+                new FunctionEntry("JOIN EVENT", "event", data),
+                new FunctionEntry("RIGHT CLICK", "event"),
+                new FunctionEntry("lobby settings", "func"),
+                new FunctionEntry("main loop", "process"),
+                new FunctionEntry("EXPLODE EVENT", "entity_event"),
+                new FunctionEntry("LEAVE EVENT", "event")
+
+        ));
+        generateFunctionList(this.functionEntryList);
+
         // codespace
-        this.codespace = new RenderableRectangleObject(0,0, this.width-this.sidebar.width, this.height-this.toolbar.height, CODESPACE_COLOR);
+        this.codespace = new RenderableCodespaceObject(textRenderer,0,0, this.width-this.sidebar.width, this.height-this.toolbar.height, CODESPACE_COLOR, this);
         this.codespace.setBinding(1,0);
         this.sidebar.addSibling(codespace);
 
 
-        this.codespaceRect = new RenderableRectangleObject(100, -50, 100, 100, setAlpha(0xd400ff, 1f));
-        this.codespace.addSibling(codespaceRect);
 
+
+
+        //this.codespaceRect = new RenderableRectangleObject(100, -50, 100, 100, setAlpha(0xd400ff, 1f));
+        //this.codespace.addSibling(codespaceRect);
 
     }
 /*
@@ -158,11 +179,36 @@ public class CodeScreen extends Screen {
         // Render
 
         renderObjectList.forEach(obj -> {
-            obj.render(context,0,0,0,0);
+            obj.render(context, mouseX, mouseY, 0,0,0,0);
         });
         this.renderCycle += 1;
     }
 
+    private void generateFunctionList(ArrayList<FunctionEntry> arrayList) {
+        String name = "REAL";
+        int width;
+        int height = 13;
+        int margin = 7;
+        int heightMargin = 3;
+        int defaultColor = setAlpha(0x3e3f42,1f);
+        int hightlightColor = setAlpha(0x434447,1f);
+        int clickColor = setAlpha(0x4b4c4f,1f);
+        int x;
+        int y;
+        int borderSize = margin-5;
+
+        this.listRect.siblings.clear();
+        for (int i = 0; i < arrayList.size(); i++) {
+            FunctionEntry entry = arrayList.get(i);
+            x = margin;
+            y = (i*(height+heightMargin)) + (this.searchBarRect.y+this.searchBarRect.height+this.searchBarRect.bottomBorder.size+5);
+            width = this.sidebar.width-(margin*2);
+            RenderableRectButton button = new RenderableRectButton(this.textRenderer, Text.literal(entry.name), x, y, width+borderSize, height, defaultColor, hightlightColor, clickColor, i);
+            button.setLeftBorder(true, setAlpha(entry.getFuncColor(entry.functionType),1f),borderSize);
+            this.listRect.addSibling(button);
+
+        }
+    }
 
     private int setAlpha(int color, float alpha) {return (color+ ((int)(alpha*255)<<24));}
 
@@ -171,11 +217,23 @@ public class CodeScreen extends Screen {
     }
 
     @Override
-    public boolean mouseScrolled(double mouseX, double mouseY, double vertical, double horizontal) {
+    public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        this.listRect.scrollingY += (int) (verticalAmount*5f);
         return false;
     }
 
-
+    @Override
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        for (RenderableRectangleObject rect : this.listRect.siblings) {
+            int dx = rect.x+rect.parent.x + (rect.parent.width*rect.xBinding);
+            int dy = rect.y+rect.parent.y + (rect.parent.height*rect.yBinding);
+            if (mouseX > dx && mouseX < dx+width && mouseY > dy && mouseY < dy+height) {
+                this.focusedFunctionTabIndex = rect.clickID;
+                break;
+            }
+        }
+        return super.mouseClicked(mouseX, mouseY, button);
+    }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
@@ -185,10 +243,6 @@ public class CodeScreen extends Screen {
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        return super.mouseClicked(mouseX, mouseY, button);
-    }
     @Override
     public boolean shouldPause() {
         return false;

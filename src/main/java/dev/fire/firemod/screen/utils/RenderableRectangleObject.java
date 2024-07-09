@@ -11,14 +11,19 @@ public class RenderableRectangleObject {
     public int y;
     public int width;
     public int height;
+    public int scrollingX;
+    public int scrollingY;
     public ArrayList<RenderableRectangleObject> siblings;
     public ArrayList<RenderableRectangleObject> preSiblings;
     public ArrayList<Widget> widgets;
     public int color;
     public RenderableRectangleObject parent;
+    public RenderableRectangleObject listRect;
 
     public int xBinding = 0;
     public int yBinding = 0;
+
+    public int clickID;
 
     public RectBorder topBorder = new RectBorder(false);
     public RectBorder rightBorder = new RectBorder(false);
@@ -43,23 +48,24 @@ public class RenderableRectangleObject {
         this.height = height;
     }
 
-    public void render(DrawContext context, int parentx, int parenty, int parentWidth, int parentHeight) {
+    public void render(DrawContext context, int mouseX, int mouseY, int parentx, int parenty, int parentWidth, int parentHeight) {
         int dx = x+parentx + (parentWidth*this.xBinding);
         int dy = y+parenty + (parentHeight*this.yBinding);
 
-        preSiblings.forEach(obj -> {
-            obj.render(context,dx,dy,width,height);
-        });
+        preSiblings.forEach(obj -> obj.render(context, mouseX, mouseY, dx,dy,dx+width,dy+height));
 
         context.fill(dx, dy, dx+width, dy+height, color);
 
-        siblings.forEach(obj -> {
-            obj.render(context,dx,dy,width,height);
-        });
+        siblings.forEach(obj -> obj.render(context, mouseX, mouseY, dx,dy,dx+width,dy+height));
 
         if (this.topBorder.enabled) { context.fill(dx, dy-this.topBorder.size, dx+width, dy, this.topBorder.color); }
         if (this.bottomBorder.enabled) { context.fill(dx, dy+height, dx+width, dy+height+this.bottomBorder.size, this.bottomBorder.color); }
-        if (this.rightBorder.enabled) { context.fill(dx+width, dy, dx+width+this.rightBorder.size, dy+height, this.rightBorder.color); }
+        if (this.rightBorder.enabled) { context.fill(dx+    width, dy, dx+width+this.rightBorder.size, dy+height, this.rightBorder.color); }
+        if (this.leftBorder.enabled) { context.fill(dx-this.leftBorder.size, dy, dx, dy+height, this.leftBorder.color); }
+    }
+
+    public void updateScrolling() {
+            
     }
 
     public Point getScreenPosition() {
@@ -105,6 +111,7 @@ public class RenderableRectangleObject {
     public Point getCenter() {
         return new Point(this.x+this.width/2,this.y+this.height/2);
     }
+
     public Point getScreenCenter() {
         Point center = getScreenPosition();
         return new Point(center.x+this.width/2,center.y+this.height/2);

@@ -3,10 +3,16 @@ package dev.fire.firemod;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.text.Text;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.mojang.brigadier.builder.LiteralArgumentBuilder.literal;
 
 public class Firemod implements ModInitializer {
 	public static final String MOD_NAME = "Fire Mod";
@@ -33,7 +39,7 @@ public class Firemod implements ModInitializer {
 
 		MOD_VERSION = FabricLoader.getInstance().getModContainer(MOD_ID).get().getMetadata().getVersion().getFriendlyString();
 
-		LOGGER.info("init");
+		LOGGER.info("firemod initalized!");
 	}
 
 	public void onClose() {

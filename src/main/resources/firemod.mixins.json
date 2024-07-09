@@ -3,7 +3,8 @@
 	"package": "dev.fire.firemod.mixin",
 	"compatibilityLevel": "JAVA_17",
 	"mixins": [
-		"ExampleMixin",
+		"ChatHudMixin",
+		"PlayerListHudMixin",
 		"render.MMultiplayerScreen",
 		"render.MOptionsScreen"
 	],
