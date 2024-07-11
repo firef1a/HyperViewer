@@ -12,10 +12,16 @@ public class FunctionEntry {
     public ArrayList<String> data;
 
     public static Map<String, Integer> typeColors = Map.ofEntries(
-            entry("event",0x7ad9ff),
+            entry("player_event",0x7ad9ff),
             entry("process",0x6eff54),
             entry("entity_event",0xffe942),
-            entry("func",0x365aff)
+            entry("function",0x365aff)
+    );
+    public static Map<String, String> formattedNames = Map.ofEntries(
+            entry("player_event","Player Event"),
+            entry("process","Process"),
+            entry("entity_event","Entity Event"),
+            entry("function","Function")
     );
 
     public FunctionEntry(String name, String functionType) {

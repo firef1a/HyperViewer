@@ -1,10 +1,15 @@
 package dev.fire.firemod.screen.utils;
 
+import com.mojang.datafixers.kinds.IdF;
 import dev.fire.firemod.screen.CodeScreen;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.Widget;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.Text;
+import net.minecraft.util.Colors;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.function.Function;
 
@@ -48,6 +53,13 @@ public class RenderableCodespaceObject extends RenderableRectangleObject {
         this.color = color;
         this.codeScreen = codeScreen;
     }
+
+
+    public void setBinding(int xb, int yb) {
+        this.xBinding = xb;
+        this.yBinding = yb;
+    }
+
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, int parentx, int parenty, int parentWidth, int parentHeight) {
         int dx = x+parentx + (parentWidth*this.xBinding);
@@ -62,8 +74,20 @@ public class RenderableCodespaceObject extends RenderableRectangleObject {
         FunctionEntry function = codeScreen.functionEntryList.get(codeScreen.focusedFunctionTabIndex);
 
         int index = 0;
-        for (String codeLine : function.data) {
-            context.drawTextWithShadow(textRenderer,codeLine,dx,(dy+index*5),0xffffff);
+        int lineNum;
+        int tx;
+        int ty;
+        int margin = 10;
+        int lineHeight = 11;
+        // 7 is text height
+        for (String text : function.data) {
+            tx = dx + margin;
+            ty = (int) ((dy+index*(lineHeight)) + margin + codeScreen.codespaceScrollOffset*2);
+            lineNum = index+1;
+
+            MutableText linePrefix = Text.literal(String.valueOf(lineNum)).withColor(Colors.GRAY).append(Text.literal( "  | ").withColor(0x00A78));
+            MutableText codeLine = linePrefix.append(Text.literal(text).withColor(0xffffff));
+            context.drawText(textRenderer,codeLine,tx,ty,0xffffff, false);
             index++;
         }
 

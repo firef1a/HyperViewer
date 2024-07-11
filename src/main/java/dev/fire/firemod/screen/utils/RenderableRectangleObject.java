@@ -11,8 +11,8 @@ public class RenderableRectangleObject {
     public int y;
     public int width;
     public int height;
-    public int scrollingX;
-    public int scrollingY;
+    public double scrollingX;
+    public double scrollingY;
     public ArrayList<RenderableRectangleObject> siblings;
     public ArrayList<RenderableRectangleObject> preSiblings;
     public ArrayList<Widget> widgets;

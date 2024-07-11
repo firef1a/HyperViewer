@@ -48,6 +48,7 @@ public class CodeScreen extends Screen {
     public int renderCycle = 1;
 
     public int focusedFunctionTabIndex = 0;
+    public double codespaceScrollOffset = 0;
 
     public CodeScreen(Text title, Screen parent) {
         super(title);
@@ -114,12 +115,12 @@ public class CodeScreen extends Screen {
         ));
 
         this.functionEntryList = new ArrayList<FunctionEntry>(Arrays.asList(
-                new FunctionEntry("JOIN EVENT", "event", data),
-                new FunctionEntry("RIGHT CLICK", "event"),
-                new FunctionEntry("lobby settings", "func"),
+                new FunctionEntry("JOIN EVENT", "player_event", data),
+                new FunctionEntry("RIGHT CLICK", "process"),
+                new FunctionEntry("lobby settings", "function"),
                 new FunctionEntry("main loop", "process"),
                 new FunctionEntry("EXPLODE EVENT", "entity_event"),
-                new FunctionEntry("LEAVE EVENT", "event")
+                new FunctionEntry("LEAVE EVENT", "player_event")
 
         ));
         generateFunctionList(this.functionEntryList);
@@ -218,7 +219,9 @@ public class CodeScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
-        this.listRect.scrollingY += (int) (verticalAmount*5f);
+
+        this.listRect.scrollingY += verticalAmount*5f;
+        this.codespaceScrollOffset += verticalAmount*5f;
         return false;
     }
 
