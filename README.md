@@ -1,7 +1,1 @@
-# A MOD FOR MINECRAFT THAT DOES THINGS
-#   MOD FOR MINECRAFT THAT DOES THINGS
-#       FOR MINECRAFT THAT DOES THINGS
-#           MINECRAFT THAT DOES THINGS
-#                     THAT DOES THINGS
-#                          DOES THINGS
-#                               THINGS
+# cray cray!
