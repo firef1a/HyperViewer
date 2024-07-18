@@ -1,13 +1,6 @@
-package dev.fire.firemod.screen.external;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.mojang.authlib.minecraft.client.ObjectMapper;
-import dev.fire.firemod.Firemod;
-import org.apache.http.NameValuePair;
-import org.apache.http.client.methods.HttpPost;
+package dev.fire.firemod.external;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;

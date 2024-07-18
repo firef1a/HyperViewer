@@ -1,17 +1,11 @@
 package dev.fire.firemod.screen.chat;
 import dev.fire.firemod.Firemod;
-import dev.fire.firemod.screen.external.DiscordWebhookManager;
-import dev.fire.firemod.screen.external.SystemIOManager;
-import dev.fire.firemod.screen.utils.FunctionEntry;
+import dev.fire.firemod.external.SystemIOManager;
 import net.minecraft.text.*;
-import net.minecraft.util.Colors;
 import net.minecraft.util.Formatting;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 public class ChatUtil {
     public static int SUPPORT_COLOR = 0x557FD4;
@@ -25,13 +19,11 @@ public class ChatUtil {
         Text supportPrefix = Text.literal("[SUPPORT] ").withColor(SUPPORT_COLOR);
 
         if (isListIndexEqual(siblings, 0, supportPrefix)) {
-            //ChatManager.sendMessageToPlayerDisplay(Text.literal("support message detected!!").withColor(Colors.LIGHT_RED));
             if (isListIndexEqual(siblings, 2, Text.literal(" joined the support queue. ").formatted(Formatting.GRAY))) {
                 String player = getContent(siblings.get(1));
                 String reason = getContent(siblings.get(4));
 
                 SystemIOManager.sendDesktopNotification(player + " requested a support session", reason, 1000*5, "critical");
-                //DiscordWebhookManager.sendWebhookMessage("<@464132019300073479> " + player + " joined the support queue. ▶ " + reason);
 
                 Firemod.MOBILE_NOTIFICATION_MANAGER.sendMobileNotification(player + " entered the queue.", reason);
 

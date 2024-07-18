@@ -29,13 +29,14 @@ public class RenderableRectButton extends RenderableRectangleObject{
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, int parentx, int parenty, int parentWidth, int parentHeight) {
         int dx = x+parentx + (parentWidth*this.xBinding);
-        int dy = y+parenty + (parentHeight*this.yBinding);
+        int dy = (int) (y+parenty + (parentHeight*this.yBinding) + scrollingY);
         Point center = new Point(dx+(width/2),dy+(height/2));
 
 
         preSiblings.forEach(obj -> obj.render(context, mouseX, mouseY, dx,dy,dx+width,dy+height));
 
         int drawColor;
+        Point mouse = new Point(mouseX,mouseY);
         if (mouseX > dx && mouseX < dx+width && mouseY > dy && mouseY < dy+height) {
             drawColor = this.hightlightColor;
         } else {
@@ -52,5 +53,7 @@ public class RenderableRectButton extends RenderableRectangleObject{
         if (this.bottomBorder.enabled) { context.fill(dx, dy+height, dx+width, dy+height+this.bottomBorder.size, this.bottomBorder.color); }
         if (this.rightBorder.enabled) { context.fill(dx+width, dy, dx+width+this.rightBorder.size, dy+height, this.rightBorder.color); }
         if (this.leftBorder.enabled) { context.fill(dx-this.leftBorder.size, dy, dx, dy+height, this.leftBorder.color); }
+
+        this.scrollingY = MathUtils.lerp(this.scrollingY, this.lerpcrollingY, this.lerpScrollAmount);
     }
 }

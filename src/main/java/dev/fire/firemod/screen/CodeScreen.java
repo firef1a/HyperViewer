@@ -3,14 +3,17 @@ package dev.fire.firemod.screen;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.fire.firemod.Firemod;
 import dev.fire.firemod.screen.utils.*;
+import dev.fire.firemod.screen.utils.templateUtils.TestData;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
+import java.util.random.RandomGenerator;
+
+import static java.util.Map.entry;
 
 
 public class CodeScreen extends Screen {
@@ -30,7 +33,11 @@ public class CodeScreen extends Screen {
     public RenderableRectangleObject background;
     public RenderableRectangleObject toolbar;
     public RenderableRectangleObject sidebar;
-    public RenderableCodespaceObject codespace;
+
+    public RenderableRectangleObject codespace;
+    public RenderableCodespaceObject codespaceList;
+
+
     public RenderableRectangleObject searchBarRect;
     public RenderableRectangleObject codespaceRect;
     public RenderableRectangleObject functionsList;
@@ -48,7 +55,6 @@ public class CodeScreen extends Screen {
     public int renderCycle = 1;
 
     public int focusedFunctionTabIndex = 0;
-    public double codespaceScrollOffset = 0;
 
     public CodeScreen(Text title, Screen parent) {
         super(title);
@@ -57,6 +63,7 @@ public class CodeScreen extends Screen {
 
     @Override
     protected void init() {
+        UUID.randomUUID();
         super.init();
         this.renderCycle = 1;
 
@@ -108,31 +115,26 @@ public class CodeScreen extends Screen {
         // function list
         this.listRect = new RenderableRectangleObject(0,0,0,0);
         this.sidebar.addSibling(listRect);
-        ArrayList<String> data = new ArrayList<String>(Arrays.asList(
-                new String("hello world!"),
-                new String("hello world, electric boogaloo"),
-                new String("the game is loading the game is loading the game is loading the game is loading the game is loading the game is loading the game is loading the game is loading the game is loading the game is loading the")
+        ArrayList<String> data = new ArrayList<String>();
+        int min = 1;
+        int max = 10000;
+        for (int i = 0; i < 100; i++) {
+            int rn = new Random().nextInt(max - min + 1) + min;
+            data.add("hello world! " + String.valueOf(rn));
+        }
+        this.functionEntryList = new ArrayList<>(List.of(
+                FunctionEntry.getFunctionEntryFromJson(TestData.data)
         ));
 
-        this.functionEntryList = new ArrayList<FunctionEntry>(Arrays.asList(
-                new FunctionEntry("JOIN EVENT", "player_event", data),
-                new FunctionEntry("RIGHT CLICK", "process"),
-                new FunctionEntry("lobby settings", "function"),
-                new FunctionEntry("main loop", "process"),
-                new FunctionEntry("EXPLODE EVENT", "entity_event"),
-                new FunctionEntry("LEAVE EVENT", "player_event")
-
-        ));
         generateFunctionList(this.functionEntryList);
 
         // codespace
-        this.codespace = new RenderableCodespaceObject(textRenderer,0,0, this.width-this.sidebar.width, this.height-this.toolbar.height, CODESPACE_COLOR, this);
+        this.codespace = new RenderableRectangleObject(0,0, this.width-this.sidebar.width, this.height-this.toolbar.height, CODESPACE_COLOR);
         this.codespace.setBinding(1,0);
+
+        this.codespaceList = new RenderableCodespaceObject(textRenderer,0,0, 0,0, setAlpha(CODESPACE_COLOR,0), this);
+        this.codespace.addSibling(codespaceList);
         this.sidebar.addSibling(codespace);
-
-
-
-
 
         //this.codespaceRect = new RenderableRectangleObject(100, -50, 100, 100, setAlpha(0xd400ff, 1f));
         //this.codespace.addSibling(codespaceRect);
@@ -183,10 +185,11 @@ public class CodeScreen extends Screen {
             obj.render(context, mouseX, mouseY, 0,0,0,0);
         });
         this.renderCycle += 1;
+
+
     }
 
     private void generateFunctionList(ArrayList<FunctionEntry> arrayList) {
-        String name = "REAL";
         int width;
         int height = 13;
         int margin = 7;
@@ -204,7 +207,7 @@ public class CodeScreen extends Screen {
             x = margin;
             y = (i*(height+heightMargin)) + (this.searchBarRect.y+this.searchBarRect.height+this.searchBarRect.bottomBorder.size+5);
             width = this.sidebar.width-(margin*2);
-            RenderableRectButton button = new RenderableRectButton(this.textRenderer, Text.literal(entry.name), x, y, width+borderSize, height, defaultColor, hightlightColor, clickColor, i);
+            RenderableRectButton button = new RenderableRectButton(this.textRenderer, Text.literal(entry.functionName), x, y, width+borderSize, height, defaultColor, hightlightColor, clickColor, i);
             button.setLeftBorder(true, setAlpha(entry.getFuncColor(entry.functionType),1f),borderSize);
             this.listRect.addSibling(button);
 
@@ -219,18 +222,37 @@ public class CodeScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
+        Point mouse = new Point(mouseX, mouseY);
+        double scroll_amount = verticalAmount*10f;
+        if (this.functionEntryList.size() > 24) {
+            if (this.listRect.lerpcrollingY + scroll_amount > 0) {
+                this.listRect.lerpcrollingY = 0;
+            } else {
+                this.listRect.lerpcrollingY += scroll_amount;
+            }
 
-        this.listRect.scrollingY += verticalAmount*5f;
-        this.codespaceScrollOffset += verticalAmount*5f;
+        } else {
+            this.listRect.lerpcrollingY = 0;
+        }
+
+
+        scroll_amount = verticalAmount*22f;
+        if (codespace.isPointInside(mouse)) {
+            if (this.codespaceList.lerpcrollingY + scroll_amount > 0) {
+                this.codespaceList.lerpcrollingY = 0;
+            } else {
+                this.codespaceList.lerpcrollingY += scroll_amount;
+            }
+        }
         return false;
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        Point mouse = new Point(mouseX, mouseY);
         for (RenderableRectangleObject rect : this.listRect.siblings) {
-            int dx = rect.x+rect.parent.x + (rect.parent.width*rect.xBinding);
-            int dy = rect.y+rect.parent.y + (rect.parent.height*rect.yBinding);
-            if (mouseX > dx && mouseX < dx+width && mouseY > dy && mouseY < dy+height) {
+            if (rect.isPointInside(mouse)) {
+                Firemod.LOGGER.info("CLICKED: " + rect.clickID);
                 this.focusedFunctionTabIndex = rect.clickID;
                 break;
             }
@@ -258,4 +280,6 @@ public class CodeScreen extends Screen {
     public void close() {
         client.setScreen(parent);
     }
+
+
 }

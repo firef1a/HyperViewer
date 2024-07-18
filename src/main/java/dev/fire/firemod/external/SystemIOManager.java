@@ -1,4 +1,4 @@
-package dev.fire.firemod.screen.external;
+package dev.fire.firemod.external;
 
 import java.io.IOException;
 

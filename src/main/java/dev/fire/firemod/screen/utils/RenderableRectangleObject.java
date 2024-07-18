@@ -11,8 +11,11 @@ public class RenderableRectangleObject {
     public int y;
     public int width;
     public int height;
-    public double scrollingX;
-    public double scrollingY;
+
+    public double scrollingY = 0;
+    public double lerpcrollingY = 0;
+    public double lerpScrollAmount = 0.25;
+
     public ArrayList<RenderableRectangleObject> siblings;
     public ArrayList<RenderableRectangleObject> preSiblings;
     public ArrayList<Widget> widgets;
@@ -50,7 +53,7 @@ public class RenderableRectangleObject {
 
     public void render(DrawContext context, int mouseX, int mouseY, int parentx, int parenty, int parentWidth, int parentHeight) {
         int dx = x+parentx + (parentWidth*this.xBinding);
-        int dy = y+parenty + (parentHeight*this.yBinding);
+        int dy = (int) (y+parenty + (parentHeight*this.yBinding) + scrollingY);
 
         preSiblings.forEach(obj -> obj.render(context, mouseX, mouseY, dx,dy,dx+width,dy+height));
 
@@ -62,19 +65,22 @@ public class RenderableRectangleObject {
         if (this.bottomBorder.enabled) { context.fill(dx, dy+height, dx+width, dy+height+this.bottomBorder.size, this.bottomBorder.color); }
         if (this.rightBorder.enabled) { context.fill(dx+    width, dy, dx+width+this.rightBorder.size, dy+height, this.rightBorder.color); }
         if (this.leftBorder.enabled) { context.fill(dx-this.leftBorder.size, dy, dx, dy+height, this.leftBorder.color); }
-    }
 
-    public void updateScrolling() {
-            
+        this.scrollingY = MathUtils.lerp(this.scrollingY, this.lerpcrollingY, this.lerpScrollAmount);
     }
 
     public Point getScreenPosition() {
+        int yval = (int) (this.y+scrollingY);
         if (this.parent == null) {
-            return new Point(this.x,this.y);
+            return new Point(this.x, yval);
         } else {
             Point parentPoint = this.parent.getScreenPosition();
-            return new Point(parentPoint.x+this.y+(parent.width*this.xBinding),parentPoint.y+this.x+(parent.height*this.yBinding));
+            return new Point(parentPoint.x+yval+(parent.width*this.xBinding),parentPoint.y+yval+(parent.height*this.yBinding)+parent.scrollingY);
         }
+    }
+    public boolean isPointInside(Point point){
+        Point screenpos = getScreenPosition();
+        return point.x > screenpos.x && point.x < screenpos.x + width && point.y > screenpos.y && point.y < screenpos.y + height;
     }
 
     public int setAlpha(int color, float alpha) {return (color+ ((int)(alpha*255)<<24));}
