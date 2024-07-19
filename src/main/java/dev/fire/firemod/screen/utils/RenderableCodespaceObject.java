@@ -2,6 +2,7 @@ package dev.fire.firemod.screen.utils;
 
 import com.mojang.datafixers.kinds.IdF;
 import dev.fire.firemod.screen.CodeScreen;
+import dev.fire.firemod.screen.utils.templateUtils.CodeLine;
 import dev.fire.firemod.screen.utils.templateUtils.TestData;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -62,7 +63,7 @@ public class RenderableCodespaceObject extends RenderableRectangleObject {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, int parentx, int parenty, int parentWidth, int parentHeight) {
-        int dx = x+parentx + (parentWidth*this.xBinding);
+        int dx = (int) (x+parentx + (parentWidth*this.xBinding) + this.scrollingX);
         int dy = (int) (y+parenty + (parentHeight*this.yBinding) + this.scrollingY);
 
         preSiblings.forEach(obj -> obj.render(context, mouseX, mouseY, dx,dy,dx+width,dy+height));
@@ -81,12 +82,22 @@ public class RenderableCodespaceObject extends RenderableRectangleObject {
         int marginx = ((String.valueOf(function.formattedCodeList.size()).length() + 1) * single_width) + 2;
         int marginy = 10;
         int textHeight = 7;
-        int lineHeight = 11;
+        //int lineHeight = 11;
+        int lineHeight = 12;
 
         int tx, ty, clx, lpx, llx;
 
         // 7 is text height
-        for (Text text : function.formattedCodeList) {
+        for (CodeLine line : function.formattedCodeList) {
+            MutableText text = (MutableText) line.text;
+            int indent = line.indent;
+
+            MutableText indentText = Text.empty();
+            for (int level = 0; level < indent; level++) {
+                indentText.append("    ");
+            }
+            text = indentText.append(text);
+
             tx = dx + marginx;
             ty = (int) ((dy + index * (lineHeight)) + marginy);
             lineNum = index+1;
@@ -109,6 +120,7 @@ public class RenderableCodespaceObject extends RenderableRectangleObject {
         if (this.rightBorder.enabled)  { context.fill(dx+    width, dy, dx+width+this.rightBorder.size, dy+height, this.rightBorder.color); }
         if (this.leftBorder.enabled)   { context.fill(dx-this.leftBorder.size, dy, dx, dy+height, this.leftBorder.color); }
 
+        this.scrollingX = MathUtils.lerp(this.scrollingX, this.lerpcrollingX, this.lerpScrollAmount);
         this.scrollingY = MathUtils.lerp(this.scrollingY, this.lerpcrollingY, this.lerpScrollAmount);
     }
 }

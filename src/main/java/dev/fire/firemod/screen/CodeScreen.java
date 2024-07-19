@@ -53,8 +53,9 @@ public class CodeScreen extends Screen {
     public int SEARCHBAR_MARGIN = 5;
 
     public int renderCycle = 1;
-
     public int focusedFunctionTabIndex = 0;
+    public String searchBarText = "";
+    public String lastSearchBarText = "";
 
     public CodeScreen(Text title, Screen parent) {
         super(title);
@@ -104,17 +105,17 @@ public class CodeScreen extends Screen {
         RenderableRectangleObject searchBarWidgetRect = new RenderableRectangleObject(0, 0, this.searchBarRect.width-searchbarMarginX, this.searchBarRect.height-searchbarMarginY);
         //searchBarWidgetRect.setCenter(searchBarRect.x+(searchBarRect.width/2), searchBarRect.y+(searchBarRect.height/2)+this.toolbar.height+(searchBarWidgetRect.height/3));
         Point center = searchBarRect.getScreenCenter();
-        searchBarWidgetRect.setCenter(center.x, (int) (center.y+(searchBarRect.height/3)));
+        searchBarWidgetRect.setCenter(center.x, (int) (center.y-1+(searchBarRect.height/3)));
 
         this.searchBar = new TextFieldWidget(this.textRenderer, searchBarWidgetRect.x, searchBarWidgetRect.y,searchBarWidgetRect.width, searchBarWidgetRect.height, Text.literal("test"));
         this.searchBar.setDrawsBackground(false);
-        this.searchBar.getText();
+       // this.searchBar.getText();
 
         addDrawableChild(this.searchBar);
 
         // function list
         this.listRect = new RenderableRectangleObject(0,0,0,0);
-        this.sidebar.addSibling(listRect);
+        this.searchBarRect.addPreSibling(listRect);
         ArrayList<String> data = new ArrayList<String>();
         int min = 1;
         int max = 10000;
@@ -123,7 +124,54 @@ public class CodeScreen extends Screen {
             data.add("hello world! " + String.valueOf(rn));
         }
         this.functionEntryList = new ArrayList<>(List.of(
-                FunctionEntry.getFunctionEntryFromJson(TestData.data)
+                FunctionEntry.getFunctionEntryFromJson(TestData.projectdf),
+                FunctionEntry.getFunctionEntryFromJson(TestData.dorkey),
+                FunctionEntry.getFunctionEntryFromJson(TestData.disguise),
+                FunctionEntry.getFunctionEntryFromJson(TestData.smallfont),
+                FunctionEntry.getFunctionEntryFromJson(TestData.nopull),
+                FunctionEntry.getFunctionEntryFromJson(TestData.tablist),
+                FunctionEntry.getFunctionEntryFromJson(TestData.command),
+                FunctionEntry.getFunctionEntryFromJson(TestData.joinevent),
+                FunctionEntry.getFunctionEntryFromJson(TestData.teamcommands),
+                FunctionEntry.getFunctionEntryFromJson(TestData.webhook),
+                FunctionEntry.getFunctionEntryFromJson(TestData.swaphands),
+                FunctionEntry.getFunctionEntryFromJson(TestData.itemrc),
+                FunctionEntry.getFunctionEntryFromJson(TestData.projectdf),
+                FunctionEntry.getFunctionEntryFromJson(TestData.dorkey),
+                FunctionEntry.getFunctionEntryFromJson(TestData.disguise),
+                FunctionEntry.getFunctionEntryFromJson(TestData.smallfont),
+                FunctionEntry.getFunctionEntryFromJson(TestData.nopull),
+                FunctionEntry.getFunctionEntryFromJson(TestData.tablist),
+                FunctionEntry.getFunctionEntryFromJson(TestData.command),
+                FunctionEntry.getFunctionEntryFromJson(TestData.joinevent),
+                FunctionEntry.getFunctionEntryFromJson(TestData.teamcommands),
+                FunctionEntry.getFunctionEntryFromJson(TestData.webhook),
+                FunctionEntry.getFunctionEntryFromJson(TestData.swaphands),
+                FunctionEntry.getFunctionEntryFromJson(TestData.itemrc),
+                FunctionEntry.getFunctionEntryFromJson(TestData.projectdf),
+                FunctionEntry.getFunctionEntryFromJson(TestData.dorkey),
+                FunctionEntry.getFunctionEntryFromJson(TestData.disguise),
+                FunctionEntry.getFunctionEntryFromJson(TestData.smallfont),
+                FunctionEntry.getFunctionEntryFromJson(TestData.nopull),
+                FunctionEntry.getFunctionEntryFromJson(TestData.tablist),
+                FunctionEntry.getFunctionEntryFromJson(TestData.command),
+                FunctionEntry.getFunctionEntryFromJson(TestData.joinevent),
+                FunctionEntry.getFunctionEntryFromJson(TestData.teamcommands),
+                FunctionEntry.getFunctionEntryFromJson(TestData.webhook),
+                FunctionEntry.getFunctionEntryFromJson(TestData.swaphands),
+                FunctionEntry.getFunctionEntryFromJson(TestData.itemrc),
+                FunctionEntry.getFunctionEntryFromJson(TestData.projectdf),
+                FunctionEntry.getFunctionEntryFromJson(TestData.dorkey),
+                FunctionEntry.getFunctionEntryFromJson(TestData.disguise),
+                FunctionEntry.getFunctionEntryFromJson(TestData.smallfont),
+                FunctionEntry.getFunctionEntryFromJson(TestData.nopull),
+                FunctionEntry.getFunctionEntryFromJson(TestData.tablist),
+                FunctionEntry.getFunctionEntryFromJson(TestData.command),
+                FunctionEntry.getFunctionEntryFromJson(TestData.joinevent),
+                FunctionEntry.getFunctionEntryFromJson(TestData.teamcommands),
+                FunctionEntry.getFunctionEntryFromJson(TestData.webhook),
+                FunctionEntry.getFunctionEntryFromJson(TestData.swaphands),
+                FunctionEntry.getFunctionEntryFromJson(TestData.itemrc)
         ));
 
         generateFunctionList(this.functionEntryList);
@@ -134,7 +182,7 @@ public class CodeScreen extends Screen {
 
         this.codespaceList = new RenderableCodespaceObject(textRenderer,0,0, 0,0, setAlpha(CODESPACE_COLOR,0), this);
         this.codespace.addSibling(codespaceList);
-        this.sidebar.addSibling(codespace);
+        this.sidebar.addPreSibling(codespace);
 
         //this.codespaceRect = new RenderableRectangleObject(100, -50, 100, 100, setAlpha(0xd400ff, 1f));
         //this.codespace.addSibling(codespaceRect);
@@ -186,10 +234,47 @@ public class CodeScreen extends Screen {
         });
         this.renderCycle += 1;
 
+        searchBarText = this.searchBar.getText();
+
+        if (searchBarText != lastSearchBarText) {
+            generateFunctionList(this.functionEntryList);
+        }
+
+        lastSearchBarText = searchBarText;
+
 
     }
-
     private void generateFunctionList(ArrayList<FunctionEntry> arrayList) {
+        int width;
+        int height = 13;
+        int margin = 7;
+        int heightMargin = 3;
+        int defaultColor = setAlpha(0x3e3f42,1f);
+        int hightlightColor = setAlpha(0x434447,1f);
+        int clickColor = setAlpha(0x4b4c4f,1f);
+        int x;
+        int y;
+        int skipIminus = 0;
+        int borderSize = margin-5;
+
+        this.listRect.siblings.clear();
+        for (int i = 0; i < arrayList.size(); i++) {
+            Firemod.LOGGER.info(String.valueOf(i));
+            FunctionEntry entry = arrayList.get(i);
+            x = borderSize;
+            y = ((i-skipIminus)*(height+heightMargin)) + (this.searchBarRect.height+this.searchBarRect.bottomBorder.size+4) ;
+            width = this.sidebar.width-(margin*2);
+            RenderableRectButton button = new RenderableRectButton(this.textRenderer, Text.literal(entry.functionName), x, y, width+borderSize, height, defaultColor, hightlightColor, clickColor, i, false);
+            button.setLeftBorder(true, setAlpha(entry.getFuncColor(entry.functionType),1f),borderSize);
+            if (entry.functionName.toLowerCase().contains(this.searchBarText.toLowerCase())){
+                this.listRect.addSibling(button);
+            } else {
+                skipIminus++;
+            }
+        }
+    }
+
+    private void old(ArrayList<FunctionEntry> arrayList) {
         int width;
         int height = 13;
         int margin = 7;
@@ -203,12 +288,14 @@ public class CodeScreen extends Screen {
 
         this.listRect.siblings.clear();
         for (int i = 0; i < arrayList.size(); i++) {
+            Firemod.LOGGER.info(String.valueOf(i));
             FunctionEntry entry = arrayList.get(i);
             x = margin;
             y = (i*(height+heightMargin)) + (this.searchBarRect.y+this.searchBarRect.height+this.searchBarRect.bottomBorder.size+5);
             width = this.sidebar.width-(margin*2);
-            RenderableRectButton button = new RenderableRectButton(this.textRenderer, Text.literal(entry.functionName), x, y, width+borderSize, height, defaultColor, hightlightColor, clickColor, i);
+            RenderableRectButton button = new RenderableRectButton(this.textRenderer, Text.literal(entry.functionName), x, y, width+borderSize, height, defaultColor, hightlightColor, clickColor, i, false);
             button.setLeftBorder(true, setAlpha(entry.getFuncColor(entry.functionType),1f),borderSize);
+
             this.listRect.addSibling(button);
 
         }
@@ -223,25 +310,33 @@ public class CodeScreen extends Screen {
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         Point mouse = new Point(mouseX, mouseY);
-        double scroll_amount = verticalAmount*10f;
-        if (this.functionEntryList.size() > 24) {
-            if (this.listRect.lerpcrollingY + scroll_amount > 0) {
-                this.listRect.lerpcrollingY = 0;
-            } else {
-                this.listRect.lerpcrollingY += scroll_amount;
-            }
+        double scroll_amountX = horizontalAmount;
+        double scroll_amountY = verticalAmount*10f;
+        if (sidebar.isPointInside(mouse)) {
+            if (this.functionEntryList.size() > 24) {
+                if (this.listRect.lerpcrollingY + scroll_amountY > 0) {
+                    this.listRect.lerpcrollingY = 0;
+                } else {
+                    this.listRect.lerpcrollingY += scroll_amountY;
+                }
 
-        } else {
-            this.listRect.lerpcrollingY = 0;
+            } else {
+                this.listRect.lerpcrollingY = 0;
+            }
         }
 
-
-        scroll_amount = verticalAmount*22f;
+        scroll_amountX = horizontalAmount*11f;
+        scroll_amountY = verticalAmount*22f;
         if (codespace.isPointInside(mouse)) {
-            if (this.codespaceList.lerpcrollingY + scroll_amount > 0) {
+            if (this.codespaceList.lerpcrollingY + scroll_amountY > 0) {
                 this.codespaceList.lerpcrollingY = 0;
             } else {
-                this.codespaceList.lerpcrollingY += scroll_amount;
+                this.codespaceList.lerpcrollingY += scroll_amountY;
+            }
+            if (this.codespaceList.lerpcrollingX + scroll_amountX > 0) {
+                this.codespaceList.lerpcrollingX = 0;
+            } else {
+                this.codespaceList.lerpcrollingX += scroll_amountX;
             }
         }
         return false;
@@ -251,9 +346,16 @@ public class CodeScreen extends Screen {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         Point mouse = new Point(mouseX, mouseY);
         for (RenderableRectangleObject rect : this.listRect.siblings) {
+            Firemod.LOGGER.info("id: " + rect.clickID);
             if (rect.isPointInside(mouse)) {
                 Firemod.LOGGER.info("CLICKED: " + rect.clickID);
                 this.focusedFunctionTabIndex = rect.clickID;
+
+                this.codespaceList.lerpcrollingY = 0;
+                this.codespaceList.scrollingY = 0;
+
+                this.codespaceList.lerpcrollingX = 0;
+                this.codespaceList.scrollingX = 0;
                 break;
             }
         }

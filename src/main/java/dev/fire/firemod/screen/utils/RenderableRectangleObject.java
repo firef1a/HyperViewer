@@ -14,6 +14,9 @@ public class RenderableRectangleObject {
 
     public double scrollingY = 0;
     public double lerpcrollingY = 0;
+
+    public double scrollingX = 0;
+    public double lerpcrollingX = 0;
     public double lerpScrollAmount = 0.25;
 
     public ArrayList<RenderableRectangleObject> siblings;
@@ -23,15 +26,14 @@ public class RenderableRectangleObject {
     public RenderableRectangleObject parent;
     public RenderableRectangleObject listRect;
 
-    public int xBinding = 0;
-    public int yBinding = 0;
-
-    public int clickID;
+    public float xBinding = 0;
+    public float yBinding = 0;
 
     public RectBorder topBorder = new RectBorder(false);
     public RectBorder rightBorder = new RectBorder(false);
     public RectBorder bottomBorder = new RectBorder(false);
     public RectBorder leftBorder = new RectBorder(false);
+    public int clickID = 0;
 
     public RenderableRectangleObject(int x, int y, int width, int height, int color) {
         this.siblings = new ArrayList<RenderableRectangleObject>();
@@ -41,6 +43,17 @@ public class RenderableRectangleObject {
         this.width = width;
         this.height = height;
         this.color = color;
+    }
+
+    public RenderableRectangleObject(int x, int y, int width, int height, int color, int clickID) {
+        this.siblings = new ArrayList<RenderableRectangleObject>();
+        this.preSiblings = new ArrayList<RenderableRectangleObject>();
+        this.x = x;
+        this.y = y;
+        this.width = width;
+        this.height = height;
+        this.color = color;
+        this.clickID = clickID;
     }
     public RenderableRectangleObject(int x, int y, int width, int height) {
         this.siblings = new ArrayList<RenderableRectangleObject>();
@@ -52,8 +65,8 @@ public class RenderableRectangleObject {
     }
 
     public void render(DrawContext context, int mouseX, int mouseY, int parentx, int parenty, int parentWidth, int parentHeight) {
-        int dx = x+parentx + (parentWidth*this.xBinding);
-        int dy = (int) (y+parenty + (parentHeight*this.yBinding) + scrollingY);
+        int dx = (int) (x+parentx + (parentWidth*this.xBinding) + this.scrollingX);
+        int dy = (int) (y+parenty + (parentHeight*this.yBinding) + this.scrollingY);
 
         preSiblings.forEach(obj -> obj.render(context, mouseX, mouseY, dx,dy,dx+width,dy+height));
 
@@ -66,16 +79,18 @@ public class RenderableRectangleObject {
         if (this.rightBorder.enabled) { context.fill(dx+    width, dy, dx+width+this.rightBorder.size, dy+height, this.rightBorder.color); }
         if (this.leftBorder.enabled) { context.fill(dx-this.leftBorder.size, dy, dx, dy+height, this.leftBorder.color); }
 
+        this.scrollingX = MathUtils.lerp(this.scrollingX, this.lerpcrollingX, this.lerpScrollAmount);
         this.scrollingY = MathUtils.lerp(this.scrollingY, this.lerpcrollingY, this.lerpScrollAmount);
     }
 
     public Point getScreenPosition() {
-        int yval = (int) (this.y+scrollingY);
+        int xval = (int) (this.x);
+        int yval = (int) (this.y);
         if (this.parent == null) {
-            return new Point(this.x, yval);
+            return new Point(xval, yval);
         } else {
             Point parentPoint = this.parent.getScreenPosition();
-            return new Point(parentPoint.x+yval+(parent.width*this.xBinding),parentPoint.y+yval+(parent.height*this.yBinding)+parent.scrollingY);
+            return new Point(parentPoint.x+xval+(parent.width*this.xBinding)+parent.scrollingX,parentPoint.y+yval+(parent.height*this.yBinding)+parent.scrollingY);
         }
     }
     public boolean isPointInside(Point point){
@@ -95,7 +110,19 @@ public class RenderableRectangleObject {
         preSiblings.add(object);
     }
 
+    public void setBinding(float xb, float yb) {
+        this.xBinding = xb;
+        this.yBinding = yb;
+    }
     public void setBinding(int xb, int yb) {
+        this.xBinding = xb;
+        this.yBinding = yb;
+    }
+    public void setBinding(int xb, float yb) {
+        this.xBinding = xb;
+        this.yBinding = yb;
+    }
+    public void setBinding(float xb, int yb) {
         this.xBinding = xb;
         this.yBinding = yb;
     }

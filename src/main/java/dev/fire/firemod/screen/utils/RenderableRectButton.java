@@ -14,22 +14,23 @@ public class RenderableRectButton extends RenderableRectangleObject{
     private int hightlightColor;
     private int clickColor;
     public int clickID;
+    public boolean isCentered;
 
 
-    public RenderableRectButton(TextRenderer textRenderer, Text text,  int x, int y, int width, int height, int color, int hightlightColor, int clickColor, int clickID) {
-        super(x, y, width, height, color);
+    public RenderableRectButton(TextRenderer textRenderer, Text text,  int x, int y, int width, int height, int color, int hightlightColor, int clickColor, int clickID, boolean isCentered) {
+        super(x, y, width, height, color, clickID);
         this.textRenderer = textRenderer;
         this.text = text;
         this.listRect = new RenderableRectangleObject(0,0,0,0);
         this.hightlightColor = hightlightColor;
         this.clickColor = clickColor;
-        this.clickID = clickID;
+        this.isCentered = isCentered;
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, int parentx, int parenty, int parentWidth, int parentHeight) {
-        int dx = x+parentx + (parentWidth*this.xBinding);
-        int dy = (int) (y+parenty + (parentHeight*this.yBinding) + scrollingY);
+        int dx = (int) (x+parentx + (parentWidth*this.xBinding) + this.scrollingX);
+        int dy = (int) (y+parenty + (parentHeight*this.yBinding) + this.scrollingY);
         Point center = new Point(dx+(width/2),dy+(height/2));
 
 
@@ -45,7 +46,18 @@ public class RenderableRectButton extends RenderableRectangleObject{
 
 
         context.fill(dx, dy, dx+width, dy+height, drawColor);
-        context.drawCenteredTextWithShadow(textRenderer,text,center.x,(center.y-(textRenderer.fontHeight/2))+1,0xffffff);
+        if (isCentered) {
+            context.drawCenteredTextWithShadow(textRenderer,text,center.x,(center.y-(textRenderer.fontHeight/2))+1,0xffffff);
+        } else {
+            String cutText;
+            if (text.getString().length() >= 20){
+                cutText = text.getString().substring(0,19)+"...";
+            } else {
+                cutText = text.getString();
+            }
+            context.drawTextWithShadow(textRenderer,cutText,dx+5,(center.y-(textRenderer.fontHeight/2))+1,0xffffff);
+        }
+
 
         siblings.forEach(obj -> obj.render(context, mouseX, mouseY, dx,dy,dx+width,dy+height));
 
@@ -54,6 +66,7 @@ public class RenderableRectButton extends RenderableRectangleObject{
         if (this.rightBorder.enabled) { context.fill(dx+width, dy, dx+width+this.rightBorder.size, dy+height, this.rightBorder.color); }
         if (this.leftBorder.enabled) { context.fill(dx-this.leftBorder.size, dy, dx, dy+height, this.leftBorder.color); }
 
+        this.scrollingX = MathUtils.lerp(this.scrollingX, this.lerpcrollingX, this.lerpScrollAmount);
         this.scrollingY = MathUtils.lerp(this.scrollingY, this.lerpcrollingY, this.lerpScrollAmount);
     }
 }
