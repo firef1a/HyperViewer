@@ -1,8 +1,8 @@
 package dev.fire.firemod.screen.utils;
 
+import dev.fire.firemod.devutils.MathUtils;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.util.collection.Pool;
 
 import java.util.ArrayList;
 

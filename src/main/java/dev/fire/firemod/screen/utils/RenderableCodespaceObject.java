@@ -1,22 +1,16 @@
 package dev.fire.firemod.screen.utils;
 
-import com.mojang.datafixers.kinds.IdF;
+import dev.fire.firemod.devutils.MathUtils;
 import dev.fire.firemod.screen.CodeScreen;
 import dev.fire.firemod.screen.utils.templateUtils.CodeLine;
-import dev.fire.firemod.screen.utils.templateUtils.TestData;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
-import net.minecraft.util.Colors;
 import net.minecraft.util.Formatting;
 
-import java.awt.*;
 import java.util.ArrayList;
-import java.util.function.Function;
-
-import static java.awt.SystemColor.text;
 
 public class RenderableCodespaceObject extends RenderableRectangleObject {
     private TextRenderer textRenderer;
@@ -72,47 +66,60 @@ public class RenderableCodespaceObject extends RenderableRectangleObject {
 
         siblings.forEach(obj -> obj.render(context, mouseX, mouseY, dx,dy,dx+width,dy+height));
 
-        FunctionEntry function = codeScreen.functionEntryList.get(codeScreen.focusedFunctionTabIndex);
+        if (!codeScreen.functionEntryList.isEmpty()) {
+            FunctionEntry function = codeScreen.functionEntryList.get(codeScreen.focusedFunctionTabIndex);
 
-        int single_width = textRenderer.getWidth("x");
+            int single_width = textRenderer.getWidth("x");
 
-        int index = 0;
-        int lineNum;
+            int index = 0;
+            int lineNum;
 
-        int marginx = ((String.valueOf(function.formattedCodeList.size()).length() + 1) * single_width) + 2;
-        int marginy = 10;
-        int textHeight = 7;
-        //int lineHeight = 11;
-        int lineHeight = 12;
+            int marginx = ((String.valueOf(function.formattedCodeList.size()).length() + 1) * single_width) + 2;
+            int marginy = 10;
+            int textHeight = 7;
+            //int lineHeight = 11;
+            int lineHeight = 12;
 
-        int tx, ty, clx, lpx, llx;
+            int tx, ty, clx, lpx, llx;
+            String indentAddString = "    ";
 
-        // 7 is text height
-        for (CodeLine line : function.formattedCodeList) {
-            MutableText text = (MutableText) line.text;
-            int indent = line.indent;
+            // 7 is text height
+            for (CodeLine line : function.formattedCodeList) {
+                MutableText text = (MutableText) line.text;
+                int indent = line.indent;
 
-            MutableText indentText = Text.empty();
-            for (int level = 0; level < indent; level++) {
-                indentText.append("    ");
+                MutableText indentText = Text.empty();
+                for (int level = 0; level < indent; level++) {
+                    indentText.append(indentAddString);
+                }
+                text = indentText.append(text);
+
+                tx = dx + marginx;
+                ty = (int) ((dy + index * (lineHeight)) + marginy);
+                lineNum = index + 1;
+
+                lpx = tx - (String.valueOf(lineNum).length() * single_width);
+                MutableText linePrefix = Text.literal(String.valueOf(lineNum)).withColor(Formatting.GRAY.getColorValue());
+                context.drawText(textRenderer, linePrefix, lpx, ty, 0xffffff, false);
+
+                //llx = tx + (single_width/2);
+                //context.drawText(textRenderer,Text.literal("|"),llx,ty,0xffffff, false);
+
+                clx = tx + single_width;
+                MutableText codeLine = text.copy().withColor(0xffffff);
+                context.drawText(textRenderer, codeLine, clx, ty, 0xffffff, false);
+                index++;
+
+                if (indent > 1 && false) {
+                    int indentx;
+                    for (int i = 0; i < (indent - 1); i++) {
+                        indentx = clx + ((i + 1) * textRenderer.getWidth(indentAddString));
+                        context.fill(0, 0, 1000, 1000, 0x246dff);
+                        context.fill(indentx, ty, indentx + 2, ty + lineHeight, 0x3a3c40);
+                        context.drawText(textRenderer, Text.literal("|"), indentx, ty, 0x3a3c40, false);
+                    }
+                }
             }
-            text = indentText.append(text);
-
-            tx = dx + marginx;
-            ty = (int) ((dy + index * (lineHeight)) + marginy);
-            lineNum = index+1;
-
-            lpx = tx - (String.valueOf(lineNum).length() * single_width);
-            MutableText linePrefix = Text.literal(String.valueOf(lineNum)).withColor(Formatting.GRAY.getColorValue());
-            context.drawText(textRenderer,linePrefix,lpx,ty,0xffffff, false);
-
-            llx = tx + (single_width/2);
-            context.drawVerticalLine(llx, ty, ty+lineHeight, Formatting.DARK_GRAY.getColorValue());
-
-            clx = tx + single_width;
-            MutableText codeLine = text.copy().withColor(0xffffff);
-            context.drawText(textRenderer,codeLine,clx,ty,0xffffff, false);
-            index++;
         }
 
         if (this.topBorder.enabled)    { context.fill(dx, dy-this.topBorder.size, dx+width, dy, this.topBorder.color); }

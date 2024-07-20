@@ -44,6 +44,7 @@ public class CodeScreen extends Screen {
     public RenderableRectangleObject listRect;
 
     public ArrayList<FunctionEntry> functionEntryList;
+    public ArrayList<FunctionEntry> lastFunctionEntryList;
 
     public TextFieldWidget searchBar;
 
@@ -93,10 +94,10 @@ public class CodeScreen extends Screen {
 
 
         // search bar
-        this.searchBarRect = new RenderableRectangleObject(SEARCHBAR_MARGIN, this.toolbar.y+SEARCHBAR_MARGIN, SIDEBAR_WIDTH-SEARCHBAR_MARGIN*2, SEARCHBAR_HEIGHT, SEARCHBAR_COLOR);
-        this.searchBarRect.setBinding(0,1);
+        this.searchBarRect = new RenderableRectangleObject(SEARCHBAR_MARGIN, SEARCHBAR_MARGIN, SIDEBAR_WIDTH-SEARCHBAR_MARGIN*2, SEARCHBAR_HEIGHT, SEARCHBAR_COLOR);
+        this.searchBarRect.setBinding(0,0);
         this.searchBarRect.setBottomBorder(true, HIGHLIGHT_COLOR, 2);
-        this.toolbar.addPreSibling(searchBarRect);
+        this.sidebar.addSibling(searchBarRect);
 
 
         int searchbarMarginX = this.searchBarRect.width/12;
@@ -116,6 +117,12 @@ public class CodeScreen extends Screen {
         // function list
         this.listRect = new RenderableRectangleObject(0,0,0,0);
         this.searchBarRect.addPreSibling(listRect);
+
+        // hide scrolling functions rect
+
+        RenderableRectangleObject hideRect = new RenderableRectangleObject(0,-searchBarRect.y,searchBarRect.width,searchBarRect.y+searchBarRect.height+searchBarRect.bottomBorder.size+4, sidebar.color);
+        this.searchBarRect.addPreSibling(hideRect);
+
         ArrayList<String> data = new ArrayList<String>();
         int min = 1;
         int max = 10000;
@@ -123,43 +130,8 @@ public class CodeScreen extends Screen {
             int rn = new Random().nextInt(max - min + 1) + min;
             data.add("hello world! " + String.valueOf(rn));
         }
+        /*
         this.functionEntryList = new ArrayList<>(List.of(
-                FunctionEntry.getFunctionEntryFromJson(TestData.projectdf),
-                FunctionEntry.getFunctionEntryFromJson(TestData.dorkey),
-                FunctionEntry.getFunctionEntryFromJson(TestData.disguise),
-                FunctionEntry.getFunctionEntryFromJson(TestData.smallfont),
-                FunctionEntry.getFunctionEntryFromJson(TestData.nopull),
-                FunctionEntry.getFunctionEntryFromJson(TestData.tablist),
-                FunctionEntry.getFunctionEntryFromJson(TestData.command),
-                FunctionEntry.getFunctionEntryFromJson(TestData.joinevent),
-                FunctionEntry.getFunctionEntryFromJson(TestData.teamcommands),
-                FunctionEntry.getFunctionEntryFromJson(TestData.webhook),
-                FunctionEntry.getFunctionEntryFromJson(TestData.swaphands),
-                FunctionEntry.getFunctionEntryFromJson(TestData.itemrc),
-                FunctionEntry.getFunctionEntryFromJson(TestData.projectdf),
-                FunctionEntry.getFunctionEntryFromJson(TestData.dorkey),
-                FunctionEntry.getFunctionEntryFromJson(TestData.disguise),
-                FunctionEntry.getFunctionEntryFromJson(TestData.smallfont),
-                FunctionEntry.getFunctionEntryFromJson(TestData.nopull),
-                FunctionEntry.getFunctionEntryFromJson(TestData.tablist),
-                FunctionEntry.getFunctionEntryFromJson(TestData.command),
-                FunctionEntry.getFunctionEntryFromJson(TestData.joinevent),
-                FunctionEntry.getFunctionEntryFromJson(TestData.teamcommands),
-                FunctionEntry.getFunctionEntryFromJson(TestData.webhook),
-                FunctionEntry.getFunctionEntryFromJson(TestData.swaphands),
-                FunctionEntry.getFunctionEntryFromJson(TestData.itemrc),
-                FunctionEntry.getFunctionEntryFromJson(TestData.projectdf),
-                FunctionEntry.getFunctionEntryFromJson(TestData.dorkey),
-                FunctionEntry.getFunctionEntryFromJson(TestData.disguise),
-                FunctionEntry.getFunctionEntryFromJson(TestData.smallfont),
-                FunctionEntry.getFunctionEntryFromJson(TestData.nopull),
-                FunctionEntry.getFunctionEntryFromJson(TestData.tablist),
-                FunctionEntry.getFunctionEntryFromJson(TestData.command),
-                FunctionEntry.getFunctionEntryFromJson(TestData.joinevent),
-                FunctionEntry.getFunctionEntryFromJson(TestData.teamcommands),
-                FunctionEntry.getFunctionEntryFromJson(TestData.webhook),
-                FunctionEntry.getFunctionEntryFromJson(TestData.swaphands),
-                FunctionEntry.getFunctionEntryFromJson(TestData.itemrc),
                 FunctionEntry.getFunctionEntryFromJson(TestData.projectdf),
                 FunctionEntry.getFunctionEntryFromJson(TestData.dorkey),
                 FunctionEntry.getFunctionEntryFromJson(TestData.disguise),
@@ -173,6 +145,9 @@ public class CodeScreen extends Screen {
                 FunctionEntry.getFunctionEntryFromJson(TestData.swaphands),
                 FunctionEntry.getFunctionEntryFromJson(TestData.itemrc)
         ));
+         */
+        this.functionEntryList = Firemod.functionDataManager.functionEntryArrayList;
+        this.lastFunctionEntryList = new ArrayList<>();
 
         generateFunctionList(this.functionEntryList);
 
@@ -183,6 +158,7 @@ public class CodeScreen extends Screen {
         this.codespaceList = new RenderableCodespaceObject(textRenderer,0,0, 0,0, setAlpha(CODESPACE_COLOR,0), this);
         this.codespace.addSibling(codespaceList);
         this.sidebar.addPreSibling(codespace);
+
 
         //this.codespaceRect = new RenderableRectangleObject(100, -50, 100, 100, setAlpha(0xd400ff, 1f));
         //this.codespace.addSibling(codespaceRect);
@@ -236,11 +212,19 @@ public class CodeScreen extends Screen {
 
         searchBarText = this.searchBar.getText();
 
-        if (searchBarText != lastSearchBarText) {
+        if (!Objects.equals(searchBarText, lastSearchBarText)) {
+            this.listRect.scrollingY = 0;
+            this.listRect.lerpcrollingY = 0;
             generateFunctionList(this.functionEntryList);
         }
 
         lastSearchBarText = searchBarText;
+
+        this.functionEntryList = Firemod.functionDataManager.functionEntryArrayList;
+
+        generateFunctionList(this.functionEntryList);
+
+        this.lastFunctionEntryList = this.functionEntryList;
 
 
     }
@@ -312,10 +296,24 @@ public class CodeScreen extends Screen {
         Point mouse = new Point(mouseX, mouseY);
         double scroll_amountX = horizontalAmount;
         double scroll_amountY = verticalAmount*10f;
+
+        FunctionEntry entry = this.functionEntryList.get(this.focusedFunctionTabIndex);
+
+        int code_list_size_before_scroll_x = this.codespace.width/2;
+        int max_code_scrollX = Math.min(-1*(textRenderer.getWidth(entry.formattedCodeList.get(entry.longestline).text.getString())-code_list_size_before_scroll_x), 0);
+
+        int code_list_size_before_scroll_y = 24;
+        int max_code_scrollY = Math.min(-1*(this.functionEntryList.get(this.focusedFunctionTabIndex).formattedCodeList.size()-code_list_size_before_scroll_y)*12, 0);
+
+        int function_list_size_before_scroll = 24;
+        int max_function_scroll = Math.min(-1*(this.listRect.siblings.size()-function_list_size_before_scroll)*16, 0);
+
         if (sidebar.isPointInside(mouse)) {
-            if (this.functionEntryList.size() > 24) {
+            if (this.functionEntryList.size() > function_list_size_before_scroll) {
                 if (this.listRect.lerpcrollingY + scroll_amountY > 0) {
                     this.listRect.lerpcrollingY = 0;
+                } else if (this.listRect.lerpcrollingY + scroll_amountY < max_function_scroll) {
+                    this.listRect.lerpcrollingY = max_function_scroll;
                 } else {
                     this.listRect.lerpcrollingY += scroll_amountY;
                 }
@@ -328,13 +326,19 @@ public class CodeScreen extends Screen {
         scroll_amountX = horizontalAmount*11f;
         scroll_amountY = verticalAmount*22f;
         if (codespace.isPointInside(mouse)) {
+            // Y
             if (this.codespaceList.lerpcrollingY + scroll_amountY > 0) {
                 this.codespaceList.lerpcrollingY = 0;
+            } else if (this.codespaceList.lerpcrollingY+ scroll_amountY < max_code_scrollY) {
+                this.codespaceList.lerpcrollingY = max_code_scrollY;
             } else {
                 this.codespaceList.lerpcrollingY += scroll_amountY;
             }
+            // X
             if (this.codespaceList.lerpcrollingX + scroll_amountX > 0) {
                 this.codespaceList.lerpcrollingX = 0;
+            } else if (this.codespaceList.lerpcrollingX+ scroll_amountX < max_code_scrollX) {
+                this.codespaceList.lerpcrollingX = max_code_scrollX;
             } else {
                 this.codespaceList.lerpcrollingX += scroll_amountX;
             }

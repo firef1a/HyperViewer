@@ -4,6 +4,8 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dev.fire.firemod.screen.chat.ChatLogger;
 import dev.fire.firemod.external.SimplepushNotificationManager;
+import dev.fire.firemod.viewer.FunctionDataManager;
+import dev.fire.firemod.viewer.FunctionFinder;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.loader.api.FabricLoader;
@@ -26,6 +28,9 @@ public class Firemod implements ModInitializer {
 	public static String PLAYER_UUID = null;
 	public static String PLAYER_NAME = null;
 
+	public static FunctionFinder functionFinder;
+	public static FunctionDataManager functionDataManager;
+
 	@Override
 	public void onInitialize() {
 		ClientTickEvents.START_CLIENT_TICK.register(client -> {});
@@ -40,8 +45,8 @@ public class Firemod implements ModInitializer {
 
 		MOD_VERSION = FabricLoader.getInstance().getModContainer(MOD_ID).get().getMetadata().getVersion().getFriendlyString();
 
-
-
+		functionDataManager = new FunctionDataManager();
+		functionFinder = new FunctionFinder();
 		LOGGER.info("firemod initalized!");
 	}
 
@@ -50,7 +55,7 @@ public class Firemod implements ModInitializer {
 	}
 
 	public static void onTick() {
-		//LOGGER.info("ontick event");
+		functionFinder.tick();
 	}
 
 }

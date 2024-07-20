@@ -19,13 +19,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 
 @Mixin(ClientPlayerEntity.class)
-public abstract class MClientPlayerEntity {
-    @Shadow
-    @Final
-    public ClientPlayNetworkHandler networkHandler;
-
+public class MClientPlayerEntity {
     @Inject(method = "tick", at = @At("HEAD"))
-    private void tick(CallbackInfo ci) {
+    public void tick(CallbackInfo ci) {
         Firemod.onTick();
     }
 }

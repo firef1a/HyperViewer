@@ -19,6 +19,7 @@ public class FunctionEntry {
     public String functionType;
     public String rawJsonString;
     public ArrayList<CodeLine> formattedCodeList;
+    public int longestline;
 
     public static Map<String, Integer> typeColors = Map.ofEntries(
             entry("event",0x7ad9ff),
@@ -154,6 +155,15 @@ public class FunctionEntry {
                     appendText.append(Text.literal(block.block));
                     appendText.append(Text.literal(" "));
                     appendText.append(Text.literal(block.action).withColor(typeColors.get("event")));
+                    template.name = block.action;
+                    template.type = block.block;
+                    changeIndent++;
+                    has_colon = true;
+
+                } else if (Objects.equals(block.block, "entity_event")) {
+                    appendText.append(Text.literal(block.block));
+                    appendText.append(Text.literal(" "));
+                    appendText.append(Text.literal(block.action).withColor(typeColors.get("entity_event")));
                     template.name = block.action;
                     template.type = block.block;
                     changeIndent++;
@@ -368,7 +378,16 @@ public class FunctionEntry {
         this.functionName = functionName;
         this.functionType = functionType;
         this.formattedCodeList = formattedCodeList;
-
+        this.longestline = 0;
+        int linelen = 0;
+        int i = 0;
+        for (CodeLine codeLine : formattedCodeList) {
+            if (codeLine.text.getString().length() > linelen) {
+                linelen = codeLine.text.getString().length();
+                longestline = i;
+            }
+            i++;
+        }
     }
 
     public int getFuncColor(String type) {

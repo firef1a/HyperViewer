@@ -1,5 +1,6 @@
 package dev.fire.firemod.screen.utils;
 
+import dev.fire.firemod.devutils.MathUtils;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
@@ -55,7 +56,7 @@ public class RenderableRectButton extends RenderableRectangleObject{
             } else {
                 cutText = text.getString();
             }
-            context.drawTextWithShadow(textRenderer,cutText,dx+5,(center.y-(textRenderer.fontHeight/2))+1,0xffffff);
+            context.drawText(textRenderer,cutText,dx+5,(center.y-(textRenderer.fontHeight/2))+1,0xffffff, false);
         }
 
 

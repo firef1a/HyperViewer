@@ -1,8 +1,6 @@
 package dev.fire.firemod.mixin.render;
 
 import dev.fire.firemod.Firemod;
-import dev.fire.firemod.screen.CodeScreen;
-import dev.fire.firemod.screen.widget.BlendableTexturedButtonWidget;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.option.OptionsScreen;
 import net.minecraft.text.Text;
@@ -23,11 +21,7 @@ public class MOptionsScreen extends Screen {
     private final Identifier identifier_main = new Identifier(Firemod.MOD_ID + ":scripts");
     @Unique
     private final Identifier identifier_main_highlight = new Identifier(Firemod.MOD_ID + ":scripts_highlight");
-    /**
-     * Injects into the creation of the screen and adds the authentication button.
-     *
-     * @param ci injection callback info
-     */
+
     @Inject(method = "init()V", at = @At("RETURN"))
     private void init(CallbackInfo ci) {
         Firemod.LOGGER.info("testing");
