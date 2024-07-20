@@ -295,7 +295,7 @@ public class CodeScreen extends Screen {
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
         Point mouse = new Point(mouseX, mouseY);
         double scroll_amountX = horizontalAmount;
-        double scroll_amountY = verticalAmount*10f;
+        double scroll_amountY = verticalAmount*30f;
 
         FunctionEntry entry = this.functionEntryList.get(this.focusedFunctionTabIndex);
 

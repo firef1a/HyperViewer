@@ -15,7 +15,7 @@ public class FunctionDataManager {
         FunctionEntry newEntry = FunctionEntry.getFunctionEntryFromJson(rawJson);
         boolean contains = false;
         for (FunctionEntry functionEntry : functionEntryArrayList) {
-            if (functionEntry.functionName == newEntry.functionName && functionEntry.functionType == newEntry.functionType) {
+            if (functionEntry.functionName.equals(newEntry.functionName) && functionEntry.functionType.equals(newEntry.functionType)) {
                 contains = true;
                 break;
             }

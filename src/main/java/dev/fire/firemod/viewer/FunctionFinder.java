@@ -34,7 +34,7 @@ public class FunctionFinder {
     }
 
     public static void handlePacket(Packet packet) throws IOException {
-        if (Firemod.MC.currentScreen == null && Firemod.MC.getNetworkHandler() != null) {
+        if (Firemod.MC.currentScreen == null && Firemod.MC.getNetworkHandler() != null && Firemod.MC.player.isCreative()) {
             if (packet instanceof ScreenHandlerSlotUpdateS2CPacket slot) {
 
                 var nbt = slot.getStack().getNbt();
@@ -77,12 +77,30 @@ public class FunctionFinder {
     }
 
     public void tick() {
-        if (Firemod.MC.player != null && Firemod.MC.player.networkHandler != null && Firemod.MC.world != null) {
+        if (Firemod.MC.player != null && Firemod.MC.player.networkHandler != null && Firemod.MC.world != null && Firemod.MC.player.isCreative()) {
+
             //Thread newThread = new Thread(() -> {
             //
             //});
             //newThread.start();
             Vec3d playerPos = Firemod.MC.player.getPos();
+
+            if (!queueBlocks.isEmpty()) {
+                sendPacket(new ClientCommandC2SPacket(Firemod.MC.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
+
+                for (Vec3i eachBlock : queueBlocks) {
+                    String func = "["+eachBlock.getX()+", {"+eachBlock.getY()+"}, {"+eachBlock.getZ()+"}]";
+                    BlockPos blockPos = new BlockPos(eachBlock);
+                    Firemod.LOGGER.info("FOUND FUNCTION: " + func);
+
+                    sendPacket(new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND, new BlockHitResult(getVec3dFromBlock(blockPos), Direction.UP, blockPos, false), 10));
+                    //Firemod.MC.interactionManager.interactBlock(Firemod.MC.player, Hand.MAIN_HAND, new BlockHitResult(playerPos, Direction.UP, blockPos, true));
+
+                }
+                queueBlocks.clear();
+                sendPacket(new ClientCommandC2SPacket(Firemod.MC.player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY));
+
+            }
 
             for (int cx = -4; cx < 4; cx++) {
                 for (int cy = -4; cy < 4; cy++) {
@@ -97,21 +115,6 @@ public class FunctionFinder {
                         }
                     }
                 }
-            }
-
-            if (!queueBlocks.isEmpty()) {
-                sendPacket(new ClientCommandC2SPacket(Firemod.MC.player, ClientCommandC2SPacket.Mode.PRESS_SHIFT_KEY));
-
-                for (Vec3i eachBlock : queueBlocks) {
-                    String func = "["+eachBlock.getX()+", {"+eachBlock.getY()+"}, {"+eachBlock.getZ()+"}]";
-                    BlockPos blockPos = new BlockPos(eachBlock);
-                    Firemod.LOGGER.info("FOUND FUNCTION: " + func);
-
-                    sendPacket(new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND, new BlockHitResult(playerPos, Direction.WEST, blockPos, false), 1));
-                }
-                queueBlocks.clear();
-                sendPacket(new ClientCommandC2SPacket(Firemod.MC.player, ClientCommandC2SPacket.Mode.RELEASE_SHIFT_KEY));
-
             }
 
         }
