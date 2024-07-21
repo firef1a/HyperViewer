@@ -6,8 +6,10 @@ import dev.fire.firemod.devutils.GzipUtils;
 import dev.fire.firemod.devutils.MathUtils;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.network.packet.Packet;
+import net.minecraft.network.packet.c2s.play.CreativeInventoryActionC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerInteractBlockC2SPacket;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -46,6 +48,7 @@ public class FunctionFinder {
                             var bukkitvalues = nbt.getCompound("PublicBukkitValues");
                             if (bukkitvalues != null) {
                                 if (bukkitvalues.contains("hypercube:codetemplatedata", NbtElement.STRING_TYPE)) {
+                                    sendPacket(new CreativeInventoryActionC2SPacket(slot.getSlot(), ItemStack.EMPTY));
                                     String hypercube = bukkitvalues.getString("hypercube:codetemplatedata").replace("'", "\"").toString();
 
                                     HCV codeValues = getHCVfromJSON(hypercube);
@@ -53,6 +56,8 @@ public class FunctionFinder {
                                     String compressedCode = codeValues.code;
                                     String decompressedCode = GzipUtils.decompress(Base64Utils.decodeBase64Bytes(compressedCode));
                                     Firemod.functionDataManager.addFunction(decompressedCode);
+
+
 
                                 }
                             }
@@ -95,6 +100,7 @@ public class FunctionFinder {
 
                     sendPacket(new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND, new BlockHitResult(getVec3dFromBlock(blockPos), Direction.UP, blockPos, false), 10));
                     //Firemod.MC.interactionManager.interactBlock(Firemod.MC.player, Hand.MAIN_HAND, new BlockHitResult(playerPos, Direction.UP, blockPos, true));
+                    Firemod.MC.player.teleport();
 
                 }
                 queueBlocks.clear();
@@ -120,7 +126,7 @@ public class FunctionFinder {
         }
     }
 
-    public void sendPacket(Packet packet){
+    public static void sendPacket(Packet packet){
         Firemod.MC.player.networkHandler.sendPacket(packet);
     }
     public Vec3d getVec3dFromBlock(BlockPos pos) {
