@@ -21,6 +21,7 @@ import net.minecraft.util.math.Vec3i;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 
 
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
@@ -56,9 +57,7 @@ public class FunctionFinder {
                                     String compressedCode = codeValues.code;
                                     String decompressedCode = GzipUtils.decompress(Base64Utils.decodeBase64Bytes(compressedCode));
                                     Firemod.functionDataManager.addFunction(decompressedCode);
-
-
-
+                                    //new TeleportConfirmC2SPacket()
                                 }
                             }
                         }
@@ -100,7 +99,6 @@ public class FunctionFinder {
 
                     sendPacket(new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND, new BlockHitResult(getVec3dFromBlock(blockPos), Direction.UP, blockPos, false), 10));
                     //Firemod.MC.interactionManager.interactBlock(Firemod.MC.player, Hand.MAIN_HAND, new BlockHitResult(playerPos, Direction.UP, blockPos, true));
-                    Firemod.MC.player.teleport();
 
                 }
                 queueBlocks.clear();
@@ -113,10 +111,13 @@ public class FunctionFinder {
                     for (int cz = -4; cz < 4; cz++) {
                         Vec3i blockPos = vecDoubleToVecInt(playerPos).add(cx,cy,cz);
                         if (!checkedBlocks.contains(blockPos)) {
-                            Block blockState = Firemod.MC.world.getBlockState(new BlockPos(blockPos.getX(),blockPos.getY(),blockPos.getZ())).getBlock();
+                            BlockPos bp = new BlockPos(blockPos.getX(),blockPos.getY(),blockPos.getZ());
+                            Block blockState = Firemod.MC.world.getBlockState(bp).getBlock();
                             if (blockState == Blocks.LAPIS_BLOCK || blockState == Blocks.DIAMOND_BLOCK || blockState == Blocks.EMERALD_BLOCK || blockState == Blocks.GOLD_BLOCK) {
                                 queueBlocks.add(blockPos);
                                 checkedBlocks.add(blockPos);
+
+                                Firemod.MC.player.teleport(blockPos.getX(),blockPos.getY(),blockPos.getZ());
                             }
                         }
                     }
