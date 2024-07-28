@@ -30,10 +30,12 @@ public class FunctionFinder {
     public ArrayList<Vec3i> checkedBlocks;
     public ArrayList<Vec3i> queueBlocks;
     public boolean isModifying;
+    public static int outstandingRequests;
     public FunctionFinder() {
         this.checkedBlocks = new ArrayList<>();
         this.queueBlocks = new ArrayList<>();
         this.isModifying = false;
+        outstandingRequests = 0;
     }
 
     public static void handlePacket(Packet packet) throws IOException {
@@ -49,15 +51,19 @@ public class FunctionFinder {
                             var bukkitvalues = nbt.getCompound("PublicBukkitValues");
                             if (bukkitvalues != null) {
                                 if (bukkitvalues.contains("hypercube:codetemplatedata", NbtElement.STRING_TYPE)) {
-                                    sendPacket(new CreativeInventoryActionC2SPacket(slot.getSlot(), ItemStack.EMPTY));
-                                    String hypercube = bukkitvalues.getString("hypercube:codetemplatedata").replace("'", "\"").toString();
+                                    if (outstandingRequests > 0) {
+                                        outstandingRequests--;
 
-                                    HCV codeValues = getHCVfromJSON(hypercube);
+                                        sendPacket(new CreativeInventoryActionC2SPacket(slot.getSlot(), ItemStack.EMPTY));
+                                        String hypercube = bukkitvalues.getString("hypercube:codetemplatedata").replace("'", "\"").toString();
 
-                                    String compressedCode = codeValues.code;
-                                    String decompressedCode = GzipUtils.decompress(Base64Utils.decodeBase64Bytes(compressedCode));
-                                    Firemod.functionDataManager.addFunction(decompressedCode);
-                                    //new TeleportConfirmC2SPacket()
+                                        HCV codeValues = getHCVfromJSON(hypercube);
+
+                                        String compressedCode = codeValues.code;
+                                        String decompressedCode = GzipUtils.decompress(Base64Utils.decodeBase64Bytes(compressedCode));
+                                        Firemod.functionDataManager.addFunction(decompressedCode);
+                                        //new TeleportConfirmC2SPacket()
+                                    }
                                 }
                             }
                         }
@@ -97,6 +103,7 @@ public class FunctionFinder {
                     BlockPos blockPos = new BlockPos(eachBlock);
                     Firemod.LOGGER.info("FOUND FUNCTION: " + func);
 
+                    outstandingRequests++;
                     sendPacket(new PlayerInteractBlockC2SPacket(Hand.MAIN_HAND, new BlockHitResult(getVec3dFromBlock(blockPos), Direction.UP, blockPos, false), 10));
                     //Firemod.MC.interactionManager.interactBlock(Firemod.MC.player, Hand.MAIN_HAND, new BlockHitResult(playerPos, Direction.UP, blockPos, true));
 

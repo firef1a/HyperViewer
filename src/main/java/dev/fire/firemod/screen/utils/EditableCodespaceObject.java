@@ -1,29 +1,32 @@
 package dev.fire.firemod.screen.utils;
 
+import dev.fire.firemod.Firemod;
 import dev.fire.firemod.devutils.MathUtils;
 import dev.fire.firemod.screen.CodeScreen;
 import dev.fire.firemod.screen.utils.templateUtils.CodeLine;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 
-public class EditableCodespaceObject  extends RenderableRectangleObject {
+public class EditableCodespaceObject extends RenderableRectangleObject {
     private TextRenderer textRenderer;
     public int x;
     public int y;
     public int width;
     public int height;
-    public ArrayList<RenderableCodespaceObject> siblings;
-    public ArrayList<RenderableCodespaceObject> preSiblings;
-    public ArrayList<Widget> widgets;
+    public ArrayList<RenderableRectangleObject> siblings;
     public int color;
-    public RenderableCodespaceObject parent;
-    public RenderableCodespaceObject listRect;
+    public RenderableRectangleObject parent;
 
     public int xBinding = 0;
     public int yBinding = 0;
@@ -35,18 +38,46 @@ public class EditableCodespaceObject  extends RenderableRectangleObject {
 
     public CodeScreen codeScreen;
 
+    public ArrayList<String> textLines;
+    public Cursor cursor;
+    public boolean focused = false;
+
+    public int cursorBliker = 0;
+
+    public int marginX = 0;
+    public int marginY = 7;
+    public int lineMargin = 1;
+
+    public boolean isSelecting = false;
+    public Cursor selectionStart = new Cursor(0,0);
+    public Cursor selectionEnd = new Cursor(0,0);
+
+    public Cursor starterCursor = new Cursor(0,0);;
+
 
     public EditableCodespaceObject(TextRenderer textRenderer, int x, int y, int width, int height, int color, CodeScreen codeScreen) {
         super(x, y, width, height, color);
         this.textRenderer = textRenderer;
-        this.siblings = new ArrayList<RenderableCodespaceObject>();
-        this.preSiblings = new ArrayList<RenderableCodespaceObject>();
+        this.siblings = new ArrayList<RenderableRectangleObject>();
+        this.textLines = new ArrayList<>(List.of(
+                "Lorem ipsum dolor sit amet, consectetur adipiscing elit",
+                "sed do eiusmod tempor incididunt ut labore et dolore magna aliqua",
+                "Ut enim ad minim veniam",
+                "quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat",
+                "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur",
+                "Excepteur sint occaecat cupidatat non proident",
+                "sunt in culpa qui officia deserunt mollit anim id est laborum"
+
+        ));
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.color = color;
         this.codeScreen = codeScreen;
+        this.cursor = new Cursor(0,0);
+
+        this.marginX = getMarginX();
     }
 
 
@@ -55,72 +86,308 @@ public class EditableCodespaceObject  extends RenderableRectangleObject {
         this.yBinding = yb;
     }
 
+    public void keyPressed(int keyCode, int scanCode, int modifiers) {
+        boolean isSneaking = Screen.hasShiftDown();
+        boolean isCtrling = Screen.hasControlDown();
+        boolean isAlting = Screen.hasAltDown();
+        Cursor copyCursor = new Cursor(cursor.stringX, cursor.lineY);
+        if (focused) {
+            codeScreen.searchBar.setFocused(false);
+            String key = String.valueOf((char) keyCode).toLowerCase(Locale.ROOT);
+            if (isSneaking) {
+                if (KeyInputLister.uppercaseSpecialCharaters.containsKey(key)) {
+                    key = KeyInputLister.uppercaseSpecialCharaters.get(key);
+                } else {
+                    key = key.toUpperCase(Locale.ROOT);
+                }
+            }
+            if (keyCode == GLFW.GLFW_KEY_TAB) {
+                key = "\t";
+            }
+
+            //Firemod.LOGGER.info("MODIFIER: " + String.valueOf(modifiers));
+            int stringX = this.cursor.stringX;
+            int lineY = this.cursor.lineY;
+            int moveStringX = 0, moveLineY = 0, newStringX, newLineY;
+            if (keyCode == GLFW.GLFW_KEY_LEFT) {
+                moveStringX = -1;
+            } else if (keyCode == GLFW.GLFW_KEY_RIGHT) {
+                moveStringX = 1;
+            } else if (keyCode == GLFW.GLFW_KEY_DOWN) {
+                moveLineY = 1;
+            } else if (keyCode == GLFW.GLFW_KEY_UP) {
+                moveLineY = -1;
+            } else if (keyCode == GLFW.GLFW_KEY_BACKSPACE || keyCode == GLFW.GLFW_KEY_DELETE) {
+                if (cursor.stringX > 0) {
+
+                    //Firemod.LOGGER.info(key);
+                    String line = this.textLines.get(this.cursor.lineY);
+                    ArrayList<String> lineList = new ArrayList<String>(Arrays.asList(line.split("")));
+                    lineList.remove(stringX - 1);
+
+                    this.cursor.stringX -= 1;
+                    this.textLines.set(this.cursor.lineY, String.join("", lineList));
+                } else if (cursor.stringX == 0) {
+                    if (cursor.lineY > 0) {
+                        String oldLine = this.textLines.get(cursor.lineY);
+                        this.textLines.remove(cursor.lineY);
+                        this.cursor.lineY--;
+                        this.cursor.stringX = this.textLines.get(cursor.lineY).length();
+                        this.textLines.set(cursor.lineY, this.textLines.get(cursor.lineY) + oldLine);
+                    }
+                }
+            } else if (keyCode == GLFW.GLFW_KEY_ENTER) {
+                String substring = this.textLines.get(cursor.lineY).substring(cursor.stringX);
+                this.textLines.set(cursor.lineY, this.textLines.get(cursor.lineY).substring(0, cursor.stringX));
+                cursor.stringX = 0;
+                cursor.lineY++;
+                this.textLines.add(cursor.lineY, substring);
+
+            } else if (keyCode == GLFW.GLFW_KEY_A && isCtrling) {
+                isSelecting = true;
+                selectionStart.set(0,0);
+                selectionEnd.set(textLines.size()-1, textLines.get(textLines.size()-1).length());
+            } else if (KeyInputLister.validInputKeys.contains(keyCode)) {
+                //Firemod.LOGGER.info(key);
+                String line = this.textLines.get(this.cursor.lineY);
+                ArrayList<String> lineList = new ArrayList<String>(Arrays.asList(line.split("")));
+                lineList.add(stringX, key);
+
+                this.cursor.stringX += 1;
+                this.textLines.set(this.cursor.lineY, String.join("", lineList));
+            }
+
+            if (moveLineY != 0 || moveStringX != 0) {
+                isSelecting = false;
+                newStringX = stringX + moveStringX;
+                newLineY = lineY + moveLineY;
+                if (!(newLineY >= this.textLines.size()) && !(newStringX > this.textLines.get(lineY).length()) && newLineY >= 0 && newStringX >= 0) {
+                    if (this.textLines.get(newLineY).length() < newStringX) {
+                        newStringX = this.textLines.get(newLineY).length();
+                    }
+                    cursor.stringX = newStringX;
+                    cursor.lineY = newLineY;
+                } else if (newLineY < this.textLines.size()-1 && newStringX == this.textLines.get(lineY).length()) {
+                    cursor.stringX = 0;
+                    cursor.lineY++;
+                }
+
+            }
+
+        }
+    }
+
+    public void mouseClicked(double mouseX, double mouseY, int button) {
+        Point mouse = new Point(mouseX, mouseY);
+
+        if (this.isPointInside(mouse)) {
+            codeScreen.searchBar.setFocused(false);
+            this.focused = true;
+
+            Point pos = getScreenPosition();
+            int cursorx = Math.max((int) ((int) ((mouseX - pos.x) - marginX) - this.scrollingX),0);
+            int cursory = Math.max((int) ((int) ((mouseY - pos.y) - marginY) - this.scrollingY),0);
+
+            cursor.lineY = (int) Math.min(Math.floor((double) cursory / (textRenderer.fontHeight+lineMargin)), textLines.size()-1);
+
+            String line = textLines.get(cursor.lineY);
+            ArrayList<String> lineList = new ArrayList<String>(Arrays.asList(line.split("")));
+
+            int index = 0;
+            int sWidth = 0;
+            boolean chosen = false;
+            int currentwidth;
+            for (String s : lineList) {
+                currentwidth = textRenderer.getWidth(s);
+                if (sWidth + currentwidth >= cursorx) {
+                    if (sWidth + (currentwidth/3) >= cursorx) {
+                        cursor.stringX = index;
+                    } else {
+                        cursor.stringX = index+1;
+                    }
+
+                    chosen = true;
+                    break;
+                }
+                sWidth += currentwidth;
+                index++;
+            }
+            if (!chosen){
+                cursor.stringX = index;
+            }
+            starterCursor.set(cursor);
+
+
+
+
+        } else {
+            this.focused = false;
+        }
+    }
+
+    public void mouseReleased(double mouseX, double mouseY, int button) {
+
+    }
+
+    public void mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        Point mouse = new Point(mouseX, mouseY);
+
+        if (this.isPointInside(mouse) && this.focused) {
+            Point pos = getScreenPosition();
+            int cursorx = Math.max((int) ((int) ((mouseX - pos.x) - marginX) - this.scrollingX),0);
+            int cursory = Math.max((int) ((int) ((mouseY - pos.y) - marginY) - this.scrollingY),0);
+
+            cursor.lineY = (int) Math.min(Math.floor((double) cursory / (textRenderer.fontHeight+lineMargin)), textLines.size()-1);
+
+            String line = textLines.get(cursor.lineY);
+            ArrayList<String> lineList = new ArrayList<String>(Arrays.asList(line.split("")));
+
+            int index = 0;
+            int sWidth = 0;
+            boolean chosen = false;
+            int currentwidth;
+            for (String s : lineList) {
+                currentwidth = textRenderer.getWidth(s);
+                if (sWidth + currentwidth >= cursorx) {
+                    if (sWidth + (currentwidth/3) >= cursorx) {
+                        cursor.stringX = index;
+                    } else {
+                        cursor.stringX = index+1;
+                    }
+
+                    chosen = true;
+                    break;
+                }
+                sWidth += currentwidth;
+                index++;
+            }
+            if (!chosen){
+                cursor.stringX = index;
+            }
+
+            if (!starterCursor.isEqual(this.cursor)) {
+                isSelecting = true;
+                boolean startFirst = false;
+
+                if (starterCursor.lineY == cursor.lineY) {
+                    if (starterCursor.stringX > cursor.stringX) {
+                        startFirst = false;
+                    } else {
+                        startFirst = true;
+                    }
+                } else {
+                    if (starterCursor.lineY < cursor.lineY) {
+                        startFirst = true;
+                    } else {
+                        startFirst = false;
+                    }
+                }
+
+                if (startFirst) {
+                    selectionStart.set(this.starterCursor);
+                    selectionEnd.set(this.cursor);
+                } else {
+                    selectionStart.set(this.cursor);
+                    selectionEnd.set(this.starterCursor);
+                }
+
+                Firemod.LOGGER.info("starter: {}, {}", starterCursor.stringX, starterCursor.lineY);
+                Firemod.LOGGER.info("cursor: {}, {}", cursor.stringX, cursor.lineY);
+            } else {
+                isSelecting = false;
+            }
+
+
+
+
+        } else {
+            this.focused = false;
+        }
+    }
+
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, int parentx, int parenty, int parentWidth, int parentHeight) {
-        int dx = (int) (x+parentx + (parentWidth*this.xBinding) + this.scrollingX);
-        int dy = (int) (y+parenty + (parentHeight*this.yBinding) + this.scrollingY);
+        int dx = (int) (x+parentx + (parentWidth*this.xBinding));
+        int dy = (int) (y+parenty + (parentHeight*this.yBinding));
+        int dx2 = dx+this.width;
+        int dy2 = dy+this.width;
 
-        preSiblings.forEach(obj -> obj.render(context, mouseX, mouseY, dx,dy,dx+width,dy+height));
+        this.marginX = getMarginX();
 
+        context.enableScissor(dx, dy, dx2, dy2);
         context.fill(dx, dy, dx+width, dy+height, color);
+
+        int cursorx;
+        if (textLines.get(cursor.lineY).length() <= cursor.stringX) {
+            cursorx = marginX + dx + textRenderer.getWidth(textLines.get(cursor.lineY)) - 1;
+        } else if (cursor.stringX <= 0){
+            cursorx = marginX + dx - 1;
+        } else {
+            cursorx = marginX + dx + textRenderer.getWidth(textLines.get(cursor.lineY).substring(0, cursor.stringX)) - 1;
+        }
+        cursorx = (int) (cursorx + this.scrollingX);
+
+        int cursory = (int) (marginY + dy + cursor.lineY*(textRenderer.fontHeight + lineMargin) + this.scrollingY);
+
+        if (this.focused) {
+            context.drawText(textRenderer, "|", cursorx, cursory+1, 0xffa136, false);
+            context.drawText(textRenderer, "|", cursorx, cursory-1, 0xffa136, false);
+        }
+
+
 
         siblings.forEach(obj -> obj.render(context, mouseX, mouseY, dx,dy,dx+width,dy+height));
 
-        if (!codeScreen.functionEntryList.isEmpty()) {
-            FunctionEntry function = codeScreen.functionEntryList.get(codeScreen.focusedFunctionTabIndex);
 
-            int single_width = textRenderer.getWidth("x");
+        int scrollx = (int) (dx+scrollingX);
+        int scrolly = (int) (dy+scrollingY);
 
-            int index = 0;
-            int lineNum;
+        int linex, liney, index, lineNumx, charx, charint, textColor;
 
-            int marginx = ((String.valueOf(function.formattedCodeList.size()).length() + 1) * single_width) + 2;
-            int marginy = 10;
-            int textHeight = 7;
-            //int lineHeight = 11;
-            int lineHeight = 12;
+        index = 0;
+        for (String textLine : textLines) {
+            linex = marginX + scrollx;
+            liney = marginY + scrolly + ((textRenderer.fontHeight+lineMargin)*index);
+            lineNumx = ((scrollx + marginX) - textRenderer.getWidth(String.valueOf(index+1))) - 5;
 
-            int tx, ty, clx, lpx, llx;
-            String indentAddString = "    ";
+            context.drawText(textRenderer, String.valueOf(index+1), lineNumx, liney, Formatting.GRAY.getColorValue(), false);
 
-            // 7 is text height
-            for (CodeLine line : function.formattedCodeList) {
-                MutableText text = (MutableText) line.text;
-                int indent = line.indent;
+            ArrayList<String> lineList = new ArrayList<String>(Arrays.asList(textLine.split("")));
 
-                MutableText indentText = Text.empty();
-                for (int level = 0; level < indent; level++) {
-                    indentText.append(indentAddString);
-                }
-                text = indentText.append(text);
+            charx = linex;
+            charint = 0;
+            for (String eachChar : lineList) {
+                textColor = 0xffffff;
+                if (isSelecting && !selectionStart.isEqual(selectionEnd)) {
+                    if (index == selectionStart.lineY && index == selectionEnd.lineY){
+                        if (charint >= selectionStart.stringX && charint < selectionEnd.stringX) {
+                            textColor = 0x36b5ff;
+                        }
+                    } else if (betweenRange(index,selectionStart.lineY, selectionEnd.lineY)) {
+                        if (index != selectionEnd.lineY && index != selectionStart.lineY) {
+                            textColor = 0x36b5ff;
+                        } else if (index == selectionStart.lineY) {
+                            if (charint >= selectionStart.stringX) {
+                                textColor = 0x36b5ff;
+                            }
+                        } else if (index == selectionEnd.lineY) {
+                            if (charint < selectionEnd.stringX) {
+                                textColor = 0x36b5ff;
+                            }
+                        }
 
-                tx = dx + marginx;
-                ty = (int) ((dy + index * (lineHeight)) + marginy);
-                lineNum = index + 1;
-
-                lpx = tx - (String.valueOf(lineNum).length() * single_width);
-                MutableText linePrefix = Text.literal(String.valueOf(lineNum)).withColor(Formatting.GRAY.getColorValue());
-                context.drawText(textRenderer, linePrefix, lpx, ty, 0xffffff, false);
-
-                //llx = tx + (single_width/2);
-                //context.drawText(textRenderer,Text.literal("|"),llx,ty,0xffffff, false);
-
-                clx = tx + single_width;
-                MutableText codeLine = text.copy().withColor(0xffffff);
-                context.drawText(textRenderer, codeLine, clx, ty, 0xffffff, false);
-                index++;
-
-                if (indent > 1 && false) {
-                    int indentx;
-                    for (int i = 0; i < (indent - 1); i++) {
-                        indentx = clx + ((i + 1) * textRenderer.getWidth(indentAddString));
-                        context.fill(0, 0, 1000, 1000, 0x246dff);
-                        context.fill(indentx, ty, indentx + 2, ty + lineHeight, 0x3a3c40);
-                        context.drawText(textRenderer, Text.literal("|"), indentx, ty, 0x3a3c40, false);
                     }
                 }
+                context.drawText(textRenderer, eachChar, charx, liney, textColor, false);
+                charx += textRenderer.getWidth(eachChar);
+                charint++;
             }
+            //context.drawText(textRenderer, textLine, linex, liney, 0xffffff, false);
+
+
+            index++;
         }
+
 
         if (this.topBorder.enabled)    { context.fill(dx, dy-this.topBorder.size, dx+width, dy, this.topBorder.color); }
         if (this.bottomBorder.enabled) { context.fill(dx, dy+height, dx+width, dy+height+this.bottomBorder.size, this.bottomBorder.color); }
@@ -129,5 +396,38 @@ public class EditableCodespaceObject  extends RenderableRectangleObject {
 
         this.scrollingX = MathUtils.lerp(this.scrollingX, this.lerpcrollingX, this.lerpScrollAmount);
         this.scrollingY = MathUtils.lerp(this.scrollingY, this.lerpcrollingY, this.lerpScrollAmount);
+
+        context.disableScissor();
+    }
+
+    public int getMarginX() {
+        return (15+10);
+    }
+
+    public boolean betweenRange(int num, int rangeStart, int rangeEnd) {
+        if (num >= rangeStart && num <= rangeEnd) {
+            return true;
+        } else if (num <= rangeStart && num >= rangeEnd) {
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public Point getScreenPosition() {
+        int xval = (int) (this.x);
+        int yval = (int) (this.y);
+        if (this.parent == null) {
+            return new Point(xval, yval);
+        } else {
+            Point parentPoint = this.parent.getScreenPosition();
+            return new Point(parentPoint.x+xval+(parent.width*this.xBinding),parentPoint.y+yval+(parent.height*this.yBinding));
+        }
+    }
+
+    @Override
+    public boolean isPointInside(Point point){
+        Point screenpos = getScreenPosition();
+        return point.x > screenpos.x && point.x < screenpos.x + width && point.y > screenpos.y && point.y < screenpos.y + height;
     }
 }

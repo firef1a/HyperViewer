@@ -17,7 +17,7 @@ public class RenderableRectangleObject {
 
     public double scrollingX = 0;
     public double lerpcrollingX = 0;
-    public double lerpScrollAmount = 0.25;
+    public double lerpScrollAmount = 0.35;
 
     public ArrayList<RenderableRectangleObject> siblings;
     public ArrayList<RenderableRectangleObject> preSiblings;
@@ -101,6 +101,11 @@ public class RenderableRectangleObject {
     public int setAlpha(int color, float alpha) {return (color+ ((int)(alpha*255)<<24));}
 
     public void addSibling(RenderableRectangleObject object) {
+        object.parent = this;
+        siblings.add(object);
+    }
+
+    public void addSibling(EditableCodespaceObject object) {
         object.parent = this;
         siblings.add(object);
     }

@@ -5,6 +5,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import dev.fire.firemod.Firemod;
 import dev.fire.firemod.screen.utils.*;
 import dev.fire.firemod.screen.utils.RenderableCodespaceObject;
+import dev.fire.firemod.screen.utils.templateUtils.TestData;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
@@ -15,7 +16,6 @@ import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
-
 
 public class CodeScreen extends Screen {
     protected Text footer = Text.literal("hello");
@@ -35,11 +35,10 @@ public class CodeScreen extends Screen {
     public RenderableRectangleObject toolbar;
     public RenderableRectangleObject sidebar;
 
-    public RenderableRectangleObject codespace;
+    public EditableCodespaceObject codespace;
 
 
     public RenderableRectangleObject searchBarRect;
-    public RenderableRectangleObject functionsList;
     public RenderableRectangleObject listRect;
 
     public ArrayList<FunctionEntry> functionEntryList;
@@ -47,7 +46,6 @@ public class CodeScreen extends Screen {
 
     public TextFieldWidget searchBar;
 
-    public int BOX_HEIGHT = 20;
     public int SEARCHBAR_HEIGHT = 15;
     public int SIDEBAR_WIDTH;
     public int SEARCHBAR_MARGIN = 5;
@@ -86,7 +84,7 @@ public class CodeScreen extends Screen {
         this.toolbar.setBottomBorder(true, DARK_SECTION_BORDER_COLOR, 1);
         this.background.addSibling(toolbar);
 
-        this.sidebar = new RenderableRectangleObject(0,this.toolbar.y, SIDEBAR_WIDTH, this.height, SIDEBAR_COLOR);
+        this.sidebar = new RenderableRectangleObject(0,0, SIDEBAR_WIDTH, this.height, SIDEBAR_COLOR);
         this.sidebar.setRightBorder(true, DARK_SECTION_BORDER_COLOR, 1);
         this.sidebar.setBinding(0,1);
         this.toolbar.addPreSibling(sidebar);
@@ -131,36 +129,21 @@ public class CodeScreen extends Screen {
             int rn = new Random().nextInt(max - min + 1) + min;
             data.add("hello world! " + String.valueOf(rn));
         }
-        /*
-        this.functionEntryList = new ArrayList<>(List.of(
-                FunctionEntry.getFunctionEntryFromJson(TestData.projectdf),
-                FunctionEntry.getFunctionEntryFromJson(TestData.dorkey),
-                FunctionEntry.getFunctionEntryFromJson(TestData.disguise),
-                FunctionEntry.getFunctionEntryFromJson(TestData.smallfont),
-                FunctionEntry.getFunctionEntryFromJson(TestData.nopull),
-                FunctionEntry.getFunctionEntryFromJson(TestData.tablist),
-                FunctionEntry.getFunctionEntryFromJson(TestData.command),
-                FunctionEntry.getFunctionEntryFromJson(TestData.joinevent),
-                FunctionEntry.getFunctionEntryFromJson(TestData.teamcommands),
-                FunctionEntry.getFunctionEntryFromJson(TestData.webhook),
-                FunctionEntry.getFunctionEntryFromJson(TestData.swaphands),
-                FunctionEntry.getFunctionEntryFromJson(TestData.itemrc)
-        ));
-         */
+
         this.functionEntryList = Firemod.functionDataManager.functionEntryArrayList;
         this.lastFunctionEntryList = new ArrayList<>();
 
         generateFunctionList(this.functionEntryList);
 
         // codespace
-        this.codespace = new RenderableCodespaceObject(textRenderer, 0,0, this.width-this.sidebar.width,this.height-this.toolbar.height, setAlpha(CODESPACE_COLOR,1), this);
+        this.codespace = new EditableCodespaceObject(textRenderer, this.sidebar.rightBorder.size,this.toolbar.bottomBorder.size, (this.width-this.sidebar.width)-this.sidebar.rightBorder.size,(this.height-this.toolbar.height)-this.toolbar.bottomBorder.size, setAlpha(CODESPACE_COLOR,1), this);
         this.codespace.setBinding(1,0);
-        this.sidebar.addPreSibling(codespace);
+        this.sidebar.addSibling(codespace);
 
 
-        Point codespaceScreenPos = codespace.getScreenPosition();
+        //Point codespaceScreenPos = codespace.getScreenPosition();
 
-        dev.fire.firemod.screen.widget.EditBoxWidget testCodeWidget = new dev.fire.firemod.screen.widget.EditBoxWidget(textRenderer, codespaceScreenPos.x, codespaceScreenPos.y, codespace.width, codespace.height, Text.empty(), Text.empty());
+        //dev.fire.firemod.screen.widget.EditBoxWidget testCodeWidget = new dev.fire.firemod.screen.widget.EditBoxWidget(textRenderer, codespaceScreenPos.x, codespaceScreenPos.y, codespace.width, codespace.height, Text.empty(), Text.empty());
 
         //testCodeWidget.setDrawsBackground(true);
 
@@ -187,6 +170,7 @@ public class CodeScreen extends Screen {
     @Override
     public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
         //super.render(context, mouseX, mouseY, delta);
+        this.renderInGameBackground(context);
         RenderSystem.enableBlend();
         int centerX = this.width / 2 - 62;
         int centerY = this.height / 2 - 31 - 27;
@@ -255,7 +239,6 @@ public class CodeScreen extends Screen {
 
         this.listRect.siblings.clear();
         for (int i = 0; i < arrayList.size(); i++) {
-            Firemod.LOGGER.info(String.valueOf(i));
             FunctionEntry entry = arrayList.get(i);
             x = borderSize;
             y = ((i-skipIminus)*(height+heightMargin)) + (this.searchBarRect.height+this.searchBarRect.bottomBorder.size+4) ;
@@ -284,7 +267,7 @@ public class CodeScreen extends Screen {
 
         this.listRect.siblings.clear();
         for (int i = 0; i < arrayList.size(); i++) {
-            Firemod.LOGGER.info(String.valueOf(i));
+
             FunctionEntry entry = arrayList.get(i);
             x = margin;
             y = (i*(height+heightMargin)) + (this.searchBarRect.y+this.searchBarRect.height+this.searchBarRect.bottomBorder.size+5);
@@ -311,30 +294,6 @@ public class CodeScreen extends Screen {
 
 
 
-        int code_list_size_before_scroll_x = this.codespace.width/2;
-
-        int longestWidth;
-
-        if (!this.functionEntryList.isEmpty()){
-            FunctionEntry entry = this.functionEntryList.get(this.focusedFunctionTabIndex);
-            longestWidth = (textRenderer.getWidth(entry.formattedCodeList.get(entry.longestline).text.getString())-code_list_size_before_scroll_x);
-        } else {
-            longestWidth = 0;
-        }
-
-
-        int max_code_scrollX = Math.min(-1*longestWidth, 0);
-
-        int code_list_size_before_scroll_y = 24;
-        int longestHeight;
-
-        if (!this.functionEntryList.isEmpty()){
-            FunctionEntry entry = this.functionEntryList.get(this.focusedFunctionTabIndex);
-            longestHeight = (this.functionEntryList.get(this.focusedFunctionTabIndex).formattedCodeList.size()-code_list_size_before_scroll_y);
-        } else {
-            longestHeight = 0;
-        }
-        int max_code_scrollY = Math.min(-1*longestHeight*12, 0);
 
         int function_list_size_before_scroll = 24;
         int max_function_scroll = Math.min(-1*(this.listRect.siblings.size()-function_list_size_before_scroll)*16, 0);
@@ -358,18 +317,14 @@ public class CodeScreen extends Screen {
         scroll_amountY = verticalAmount*22f;
         if (codespace.isPointInside(mouse)) {
             // Y
-            if (this.codespace.lerpcrollingY + scroll_amountY > 0) {
+            if (this.codespace.lerpcrollingY + scroll_amountY >= 0) {
                 this.codespace.lerpcrollingY = 0;
-            } else if (this.codespace.lerpcrollingY+ scroll_amountY < max_code_scrollY) {
-                this.codespace.lerpcrollingY = max_code_scrollY;
             } else {
                 this.codespace.lerpcrollingY += scroll_amountY;
             }
             // X
-            if (this.codespace.lerpcrollingX + scroll_amountX > 0) {
+            if (this.codespace.lerpcrollingX + scroll_amountX >= 0) {
                 this.codespace.lerpcrollingX = 0;
-            } else if (this.codespace.lerpcrollingX+ scroll_amountX < max_code_scrollX) {
-                this.codespace.lerpcrollingX = max_code_scrollX;
             } else {
                 this.codespace.lerpcrollingX += scroll_amountX;
             }
@@ -394,13 +349,29 @@ public class CodeScreen extends Screen {
                 break;
             }
         }
+        codespace.mouseClicked(mouseX, mouseY, button);
+
         return super.mouseClicked(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        codespace.mouseReleased(mouseX, mouseY, button);
+        return super.mouseReleased(mouseX, mouseY, button);
+    }
+
+    @Override
+    public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
+        codespace.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
+        return super.mouseDragged(mouseX, mouseY, button, deltaX, deltaY);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
             this.close();
+        } else {
+            codespace.keyPressed(keyCode, scanCode, modifiers);
         }
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
