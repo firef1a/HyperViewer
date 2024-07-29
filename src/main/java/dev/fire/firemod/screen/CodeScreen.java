@@ -88,8 +88,6 @@ public class CodeScreen extends Screen {
         this.toolbar.addPreSibling(sidebar);
 
 
-
-
         // search bar
         this.searchBarRect = new RenderableRectangleObject(SEARCHBAR_MARGIN, SEARCHBAR_MARGIN, SIDEBAR_WIDTH-SEARCHBAR_MARGIN*2, SEARCHBAR_HEIGHT, SEARCHBAR_COLOR);
         this.searchBarRect.setBinding(0,0);

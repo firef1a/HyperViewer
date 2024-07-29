@@ -59,7 +59,7 @@ public class RenderableCodespaceObject extends RenderableRectangleObject {
         this.xBinding = xb;
         this.yBinding = yb;
     }
-
+    /*
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, int parentx, int parenty, int parentWidth, int parentHeight) {
         int dx = (int) (x+parentx + (parentWidth*this.xBinding) + this.scrollingX);
@@ -135,4 +135,6 @@ public class RenderableCodespaceObject extends RenderableRectangleObject {
         this.scrollingX = MathUtils.lerp(this.scrollingX, this.lerpcrollingX, this.lerpScrollAmount);
         this.scrollingY = MathUtils.lerp(this.scrollingY, this.lerpcrollingY, this.lerpScrollAmount);
     }
+
+     */
 }
