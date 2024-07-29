@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.*;
 
 public class CodeScreen extends Screen {
-    protected Text footer = Text.literal("hello");
     private boolean usingMouseToSelect = false;
     private Integer lastMouseX;
     private Integer lastMouseY;
@@ -60,6 +59,8 @@ public class CodeScreen extends Screen {
     public int renderCycle = 1;
     public String searchBarText = "";
     public String lastSearchBarText = "";
+
+    private static String saveCodeFileName = "codeDump.json";
 
     private final List<Drawable> drawables = Lists.newArrayList();
 
@@ -399,7 +400,7 @@ public class CodeScreen extends Screen {
             Firemod.functionDataManager.focusedFunctionEntry = 0;
             ChatManager.displayChatMessageToPlayer(Text.literal("Cleared CodeViewer Function List.").withColor(0xf25d55));
         } else if (saveButton.isPointInside(mouse)) {
-            String saveName = "codeDump.json";
+            String saveName = saveCodeFileName;
             Text displayMessage;
             String codeData = "";
             int i = 0;
@@ -420,7 +421,7 @@ public class CodeScreen extends Screen {
             }
             ChatManager.displayChatMessageToPlayer(displayMessage);
         } else if (uploadButton.isPointInside(mouse)) {
-            String saveName = "codeDump.json";
+            String saveName = saveCodeFileName;
             Text displayMessage;
             if (FileManager.exists(saveName)) {
                 try {
@@ -460,12 +461,7 @@ public class CodeScreen extends Screen {
 
             if (rect.isPointInside(mouse)) {
                 Firemod.functionDataManager.focusedFunctionEntry = rect.clickID;
-
-                this.codespace.lerpcrollingY = 0;
-                this.codespace.scrollingY = 0;
-
-                this.codespace.lerpcrollingX = 0;
-                this.codespace.scrollingX = 0;
+                codespace.resetScrolling();
                 break;
             }
         }

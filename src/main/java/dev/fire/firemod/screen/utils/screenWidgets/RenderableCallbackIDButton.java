@@ -6,8 +6,6 @@ import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
 
-import javax.security.auth.callback.Callback;
-
 public class RenderableCallbackIDButton extends RenderableRectangleObject implements ButtonObject {
     private TextRenderer textRenderer;
     public Text text;

@@ -1,6 +1,5 @@
 package dev.fire.firemod.mixin;
 
-import dev.fire.firemod.Firemod;
 import net.minecraft.client.gui.hud.PlayerListHud;
 import net.minecraft.text.Text;
 import org.spongepowered.asm.mixin.Mixin;

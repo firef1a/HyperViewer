@@ -19,12 +19,9 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
-
-
-
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Base64;
+
 
 public class FunctionFinder {
     public ArrayList<Vec3i> checkedBlocks;

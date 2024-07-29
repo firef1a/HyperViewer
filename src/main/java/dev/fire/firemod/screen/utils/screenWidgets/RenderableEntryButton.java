@@ -1,6 +1,5 @@
 package dev.fire.firemod.screen.utils.screenWidgets;
 
-import dev.fire.firemod.Firemod;
 import dev.fire.firemod.devutils.MathUtils;
 import dev.fire.firemod.screen.utils.Point;
 import net.minecraft.client.font.TextRenderer;

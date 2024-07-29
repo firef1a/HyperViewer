@@ -2,10 +2,7 @@ package dev.fire.firemod.viewer;
 
 import dev.fire.firemod.Firemod;
 import dev.fire.firemod.screen.utils.FunctionEntry;
-import dev.fire.firemod.screen.utils.templates.TestData;
-
 import java.util.ArrayList;
-import java.util.List;
 
 public class FunctionDataManager {
     public ArrayList<FunctionEntry> functionEntryArrayList;

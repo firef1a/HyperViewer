@@ -124,7 +124,12 @@ public class RenderableCodespaceObject extends RenderableRectangleObject {
         return max_codespace_scrollY;
     }
 
-
+    public void resetScrolling() {
+        lerpcrollingY = 0;
+        scrollingY = 0;
+        lerpcrollingX = 0;
+        scrollingX = 0;
+    }
 
     public void mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {}
     public void mouseReleased(double mouseX, double mouseY, int button) {}

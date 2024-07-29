@@ -19,7 +19,7 @@ public class SimplepushNotificationManager {
 
     public void sendMobileNotification(String title, String body, String event) throws IOException, InterruptedException {
         HashMap<String, String> requestBody = new HashMap<String, String>() {{
-            put("key", "WTSv6D");
+            put("key", apiKey);
             put("title", title);
             put("msg", body);
             put("event", event);
@@ -29,7 +29,7 @@ public class SimplepushNotificationManager {
 
     public void sendMobileNotification(String title, String body) throws IOException, InterruptedException {
         HashMap<String, String> requestBody = new HashMap<String, String>() {{
-            put("key", "WTSv6D");
+            put("key", apiKey);
             put("title", title);
             put("msg", body);
         }};

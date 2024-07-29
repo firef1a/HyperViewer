@@ -95,8 +95,8 @@ public class EditableCodespaceObject extends RenderableRectangleObject {
             codeScreen.searchBar.setFocused(false);
             String key = String.valueOf((char) keyCode).toLowerCase(Locale.ROOT);
             if (isSneaking) {
-                if (KeyInputLister.uppercaseSpecialCharaters.containsKey(key)) {
-                    key = KeyInputLister.uppercaseSpecialCharaters.get(key);
+                if (KeyInputData.uppercaseSpecialCharaters.containsKey(key)) {
+                    key = KeyInputData.uppercaseSpecialCharaters.get(key);
                 } else {
                     key = key.toUpperCase(Locale.ROOT);
                 }
@@ -210,7 +210,7 @@ public class EditableCodespaceObject extends RenderableRectangleObject {
                 isSelecting = true;
                 selectionStart.set(0,0);
                 selectionEnd.set(textLines.size()-1, textLines.get(textLines.size()-1).length());
-            } else if (KeyInputLister.validInputKeys.contains(keyCode)) {
+            } else if (KeyInputData.validInputKeys.contains(keyCode)) {
                 //Firemod.LOGGER.info(key);
                 if (isSelecting && !selectionStart.isEqual(selectionEnd)) {
                     isSelecting = false;

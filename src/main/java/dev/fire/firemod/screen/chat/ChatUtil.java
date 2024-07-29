@@ -1,4 +1,5 @@
 package dev.fire.firemod.screen.chat;
+
 import dev.fire.firemod.Firemod;
 import dev.fire.firemod.devutils.OSValidator;
 import dev.fire.firemod.external.SystemIOManager;

@@ -1,7 +1,6 @@
 package dev.fire.firemod.screen.chat;
 
 import dev.fire.firemod.Firemod;
-import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 
 import java.util.Objects;
