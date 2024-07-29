@@ -243,7 +243,6 @@ public class RenderableCodespaceObject extends RenderableRectangleObject impleme
         if (this.parent == null) {
             return new Point(xval, yval);
         } else {
-            Firemod.LOGGER.info("WIDTH PARENT {} {}", parent.width, this.xBinding);
             Point parentPoint = this.parent.getScreenPosition();
             return new Point(parentPoint.x+xval+(parent.width*this.xBinding),parentPoint.y+yval+(parent.height*this.yBinding));
         }
