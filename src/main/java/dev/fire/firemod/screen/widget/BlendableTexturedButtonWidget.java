@@ -11,6 +11,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import dev.fire.firemod.Firemod;
 
+// copied from authme mod
 public class BlendableTexturedButtonWidget extends TexturedButtonWidget {
 
     public BlendableTexturedButtonWidget(int x, int y, int width, int height, Identifier unfocused, Identifier focused, PressAction pressAction) {

@@ -1,9 +1,10 @@
-package dev.fire.firemod.screen.utils;
+package dev.fire.firemod.screen.utils.screenWidgets;
 
 import dev.fire.firemod.Firemod;
 import dev.fire.firemod.devutils.MathUtils;
-import dev.fire.firemod.screen.CodeScreen;
+import dev.fire.firemod.screen.screens.CodeScreen;
 
+import dev.fire.firemod.screen.utils.*;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
@@ -14,6 +15,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+
+// ignore this, this is for a future planned update where the code can be edited, might not go through with it though due to the immense technical challenges with parsing code :D
 
 public class EditableCodespaceObject extends RenderableRectangleObject {
     private final TextRenderer textRenderer;

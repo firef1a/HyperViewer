@@ -1,7 +1,7 @@
 package dev.fire.firemod.event;
 
 import dev.fire.firemod.Firemod;
-import dev.fire.firemod.screen.CodeScreen;
+import dev.fire.firemod.screen.screens.CodeScreen;
 import dev.fire.firemod.screen.chat.ChatManager;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;

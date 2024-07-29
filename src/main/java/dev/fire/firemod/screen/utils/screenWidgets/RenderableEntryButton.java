@@ -1,13 +1,14 @@
-package dev.fire.firemod.screen.utils;
+package dev.fire.firemod.screen.utils.screenWidgets;
 
 import dev.fire.firemod.devutils.MathUtils;
+import dev.fire.firemod.screen.utils.Point;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
 
 import javax.security.auth.callback.Callback;
 
-public class RenderableEntryButton extends RenderableRectangleObject{
+public class RenderableEntryButton extends RenderableRectangleObject {
     private TextRenderer textRenderer;
     public Text text;
     private Callback callback;

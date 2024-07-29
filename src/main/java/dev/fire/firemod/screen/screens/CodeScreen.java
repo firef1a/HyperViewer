@@ -1,9 +1,12 @@
-package dev.fire.firemod.screen;
+package dev.fire.firemod.screen.screens;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.fire.firemod.Firemod;
 import dev.fire.firemod.screen.utils.*;
+import dev.fire.firemod.screen.utils.screenWidgets.RenderableCodespaceObject;
+import dev.fire.firemod.screen.utils.screenWidgets.RenderableEntryButton;
+import dev.fire.firemod.screen.utils.screenWidgets.RenderableRectangleObject;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
@@ -33,7 +36,7 @@ public class CodeScreen extends Screen {
     public RenderableRectangleObject toolbar;
     public RenderableRectangleObject sidebar;
 
-    public EditableCodespaceObject codespace;
+    public RenderableCodespaceObject codespace;
 
 
     public RenderableRectangleObject searchBarRect;
@@ -132,7 +135,7 @@ public class CodeScreen extends Screen {
         generateFunctionList(this.functionEntryList);
 
         // codespace
-        this.codespace = new EditableCodespaceObject(textRenderer, this.sidebar.rightBorder.size,this.toolbar.bottomBorder.size, (this.width-this.sidebar.width)-this.sidebar.rightBorder.size,(this.height-this.toolbar.height)-this.toolbar.bottomBorder.size, setAlpha(CODESPACE_COLOR,1), this);
+        this.codespace = new RenderableCodespaceObject(textRenderer, this.sidebar.rightBorder.size,this.toolbar.bottomBorder.size, (this.width-this.sidebar.width)-this.sidebar.rightBorder.size,(this.height-this.toolbar.height)-this.toolbar.bottomBorder.size, setAlpha(CODESPACE_COLOR,1), this);
         this.codespace.setBinding(1,0);
         this.sidebar.addSibling(codespace);
 
@@ -288,8 +291,8 @@ public class CodeScreen extends Screen {
         double scroll_amountX = horizontalAmount;
         double scroll_amountY = verticalAmount*30f;
 
-
-
+        int max_codespace_scrollY = RenderableCodespaceObject.getMaxScrollY();
+        int max_codespace_scrollX = RenderableCodespaceObject.getMaxScrollX();
 
         int function_list_size_before_scroll = 24;
         int max_function_scroll = Math.min(-1*(this.listRect.siblings.size()-function_list_size_before_scroll)*16, 0);
@@ -315,12 +318,16 @@ public class CodeScreen extends Screen {
             // Y
             if (this.codespace.lerpcrollingY + scroll_amountY >= 0) {
                 this.codespace.lerpcrollingY = 0;
+            } else if (this.codespace.lerpcrollingY + scroll_amountY < max_codespace_scrollY) {
+                this.codespace.lerpcrollingY = (double) max_codespace_scrollY;
             } else {
                 this.codespace.lerpcrollingY += scroll_amountY;
             }
             // X
             if (this.codespace.lerpcrollingX + scroll_amountX >= 0) {
                 this.codespace.lerpcrollingX = 0;
+            } else if (this.codespace.lerpcrollingX + scroll_amountX < max_codespace_scrollX) {
+                this.codespace.lerpcrollingX = (double) max_codespace_scrollX;
             } else {
                 this.codespace.lerpcrollingX += scroll_amountX;
             }
@@ -332,9 +339,8 @@ public class CodeScreen extends Screen {
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         Point mouse = new Point(mouseX, mouseY);
         for (RenderableRectangleObject rect : this.listRect.siblings) {
-            Firemod.LOGGER.info("id: " + rect.clickID);
             if (rect.isPointInside(mouse)) {
-                Firemod.LOGGER.info("CLICKED: " + rect.clickID);
+
                 this.focusedFunctionTabIndex = rect.clickID;
 
                 this.codespace.lerpcrollingY = 0;

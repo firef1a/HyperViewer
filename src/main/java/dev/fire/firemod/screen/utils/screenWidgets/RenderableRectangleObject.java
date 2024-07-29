@@ -1,6 +1,8 @@
-package dev.fire.firemod.screen.utils;
+package dev.fire.firemod.screen.utils.screenWidgets;
 
 import dev.fire.firemod.devutils.MathUtils;
+import dev.fire.firemod.screen.utils.Point;
+import dev.fire.firemod.screen.utils.RectBorder;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.widget.Widget;
 
