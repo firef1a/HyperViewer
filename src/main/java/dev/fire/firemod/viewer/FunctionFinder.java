@@ -87,7 +87,7 @@ public class FunctionFinder {
     }
 
     public void tick() {
-        if (Firemod.MC.player != null && Firemod.MC.player.networkHandler != null && Firemod.MC.world != null && Firemod.MC.player.isCreative()) {
+        if (Firemod.MC.player != null && Firemod.MC.player.networkHandler != null && Firemod.MC.world != null && Firemod.MC.player.isCreative() && Firemod.functionDataManager.enableCodeViewer) {
 
             //Thread newThread = new Thread(() -> {
             //

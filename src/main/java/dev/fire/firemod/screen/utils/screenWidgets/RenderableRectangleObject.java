@@ -8,7 +8,7 @@ import net.minecraft.client.gui.widget.Widget;
 
 import java.util.ArrayList;
 
-public class RenderableRectangleObject {
+public class RenderableRectangleObject implements ButtonObject {
     public int x;
     public int y;
     public int width;
@@ -92,9 +92,11 @@ public class RenderableRectangleObject {
             return new Point(xval, yval);
         } else {
             Point parentPoint = this.parent.getScreenPosition();
-            return new Point(parentPoint.x+xval+(parent.width*this.xBinding)+parent.scrollingX,parentPoint.y+yval+(parent.height*this.yBinding)+parent.scrollingY);
+            return new Point(parentPoint.x+xval+(parent.width*this.xBinding),parentPoint.y+yval+(parent.height*this.yBinding));
         }
     }
+
+
     public boolean isPointInside(Point point){
         Point screenpos = getScreenPosition();
         return point.x > screenpos.x && point.x < screenpos.x + width && point.y > screenpos.y && point.y < screenpos.y + height;
@@ -148,10 +150,6 @@ public class RenderableRectangleObject {
         this.y = p.y-this.height/2;
     }
 
-    public Point getCenter() {
-        return new Point(this.x+this.width/2,this.y+this.height/2);
-    }
-
     public Point getScreenCenter() {
         Point center = getScreenPosition();
         return new Point(center.x+this.width/2,center.y+this.height/2);
@@ -177,4 +175,7 @@ public class RenderableRectangleObject {
         this.bottomBorder.color = color;
         this.bottomBorder.size = size;
     }
+
+    @Override
+    public void onClickCallback(double mouseX, double mouseY, int button) { }
 }

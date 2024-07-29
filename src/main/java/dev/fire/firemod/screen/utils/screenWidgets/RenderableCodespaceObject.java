@@ -1,5 +1,6 @@
 package dev.fire.firemod.screen.utils.screenWidgets;
 
+import dev.fire.firemod.Firemod;
 import dev.fire.firemod.devutils.MathUtils;
 import dev.fire.firemod.screen.screens.CodeScreen;
 import dev.fire.firemod.screen.utils.FunctionEntry;
@@ -101,7 +102,7 @@ public class RenderableCodespaceObject extends RenderableRectangleObject {
         int max_codespace_scrollX = 0;
         int margin = 300;
         if (!codeScreen.functionEntryList.isEmpty()) {
-            FunctionEntry functionEntry = codeScreen.functionEntryList.get(codeScreen.focusedFunctionTabIndex);
+            FunctionEntry functionEntry = codeScreen.functionEntryList.get(Firemod.functionDataManager.focusedFunctionEntry);
             String getCode = functionEntry.formattedCodeList.get(functionEntry.longestline).text.getString();
             int codeLength = textRenderer.getWidth(getCode);
             if (codeLength-50 > width) {
@@ -112,13 +113,12 @@ public class RenderableCodespaceObject extends RenderableRectangleObject {
     }
 
 
-
     public static int getMaxScrollY() {
         int codespace_size_before_scroll = 30;
         int max_codespace_scrollY = 0;
         int margin = 5;
-        if (!codeScreen.functionEntryList.isEmpty() && codeScreen.functionEntryList.get(codeScreen.focusedFunctionTabIndex).formattedCodeList.size() > codespace_size_before_scroll) {
-            ArrayList<CodeLine> getCode = codeScreen.functionEntryList.get(codeScreen.focusedFunctionTabIndex).formattedCodeList;
+        if (!codeScreen.functionEntryList.isEmpty() && codeScreen.functionEntryList.get(Firemod.functionDataManager.focusedFunctionEntry).formattedCodeList.size() > codespace_size_before_scroll) {
+            ArrayList<CodeLine> getCode = codeScreen.functionEntryList.get(Firemod.functionDataManager.focusedFunctionEntry).formattedCodeList;
             max_codespace_scrollY = -1 * ((RenderableCodespaceObject.lineHeight * (getCode.size()+margin)) - (RenderableCodespaceObject.lineHeight*codespace_size_before_scroll));
         }
         return max_codespace_scrollY;
@@ -162,7 +162,7 @@ public class RenderableCodespaceObject extends RenderableRectangleObject {
         siblings.forEach(obj -> obj.render(context, mouseX, mouseY, scrollx,scrolly,scrollx+width,scrolly+height));
 
         if (!codeScreen.functionEntryList.isEmpty()) {
-            FunctionEntry function = codeScreen.functionEntryList.get(codeScreen.focusedFunctionTabIndex);
+            FunctionEntry function = codeScreen.functionEntryList.get(Firemod.functionDataManager.focusedFunctionEntry);
 
             int single_width = textRenderer.getWidth("x");
 
@@ -203,16 +203,11 @@ public class RenderableCodespaceObject extends RenderableRectangleObject {
                 context.drawText(textRenderer, codeLine, clx, ty, 0xffffff, false);
                 index++;
 
-                if (indent > 1 && false) {
-                    int indentx;
-                    for (int i = 0; i < (indent - 1); i++) {
-                        indentx = clx + ((i + 1) * textRenderer.getWidth(indentAddString));
-                        context.fill(0, 0, 1000, 1000, 0x246dff);
-                        context.fill(indentx, ty, indentx + 2, ty + lineHeight, 0x3a3c40);
-                        context.drawText(textRenderer, Text.literal("|"), indentx, ty, 0x3a3c40, false);
-                    }
-                }
+
             }
+        } else {
+            Point center = getScreenCenter();
+            context.drawCenteredTextWithShadow(textRenderer, "its quite lonely in here... click the ⏻ to start using codeviewer!", center.x, center.y, 0xffffff);
         }
 
         if (this.topBorder.enabled)    { context.fill(scrollx, scrolly-this.topBorder.size, scrollx+width, scrolly, this.topBorder.color); }

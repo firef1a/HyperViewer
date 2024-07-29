@@ -34,7 +34,7 @@ public class Firemod implements ModInitializer {
 	@Override
 	public void onInitialize() {
 		ClientTickEvents.START_CLIENT_TICK.register(client -> {});
-		LOGGER.info("Initializing");
+		LOGGER.info("Initializing..");
 
 		Runtime.getRuntime().addShutdownHook(new Thread(this::onClose));
 		// allows FileDialog class to open without a HeadlessException
@@ -47,7 +47,7 @@ public class Firemod implements ModInitializer {
 
 		functionDataManager = new FunctionDataManager();
 		functionFinder = new FunctionFinder();
-		LOGGER.info("firemod initalized!");
+		LOGGER.info("smoke me a kipper, i'll be back for breakfast");
 	}
 
 	public void onClose() {

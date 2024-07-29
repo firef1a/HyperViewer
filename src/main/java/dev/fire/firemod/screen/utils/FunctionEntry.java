@@ -111,8 +111,6 @@ public class FunctionEntry {
     }
     public static Template getTemplateFromJson(String rawJson) {
         Template response = Firemod.gson.fromJson(rawJson, Template.class);
-        Firemod.LOGGER.info(response.blocks.toString());
-
         return response;
 
     }
@@ -370,13 +368,14 @@ public class FunctionEntry {
     public static FunctionEntry getFunctionEntryFromJson(String rawJsonString) {
         Template template = getTemplateFromJson(rawJsonString);
         ArrayList<CodeLine> codeList = getCodeListFromTemplate(template);
-        return new FunctionEntry(template.name, template.type, codeList);
+        return new FunctionEntry(template.name, template.type, rawJsonString, codeList);
     }
 
-    private FunctionEntry(String functionName, String functionType, ArrayList<CodeLine> formattedCodeList) {
+    private FunctionEntry(String functionName, String functionType, String rawJsonString, ArrayList<CodeLine> formattedCodeList) {
         this.functionName = functionName;
         this.functionType = functionType;
         this.formattedCodeList = formattedCodeList;
+        this.rawJsonString = rawJsonString;
         this.longestline = 0;
         int linelen = 0;
         int i = 0;

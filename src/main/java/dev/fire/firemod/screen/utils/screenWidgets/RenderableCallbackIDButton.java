@@ -1,6 +1,5 @@
 package dev.fire.firemod.screen.utils.screenWidgets;
 
-import dev.fire.firemod.Firemod;
 import dev.fire.firemod.devutils.MathUtils;
 import dev.fire.firemod.screen.utils.Point;
 import net.minecraft.client.font.TextRenderer;
@@ -9,31 +8,36 @@ import net.minecraft.text.Text;
 
 import javax.security.auth.callback.Callback;
 
-public class RenderableEntryButton extends RenderableRectangleObject implements ButtonObject {
+public class RenderableCallbackIDButton extends RenderableRectangleObject implements ButtonObject {
     private TextRenderer textRenderer;
     public Text text;
-    private Callback callback;
     private RenderableRectangleObject listRect;
     private int hightlightColor;
-    private int clickColor;
     public int clickID;
     public boolean isCentered;
 
-
-    public RenderableEntryButton(TextRenderer textRenderer, Text text, int x, int y, int width, int height, int color, int hightlightColor, int clickColor, int clickID, boolean isCentered) {
+    public RenderableCallbackIDButton(TextRenderer textRenderer, Text text, int x, int y, int width, int height, int color, int hightlightColor, int clickID, boolean isCentered) {
         super(x, y, width, height, color, clickID);
         this.textRenderer = textRenderer;
         this.text = text;
         this.listRect = new RenderableRectangleObject(0,0,0,0);
+        this.clickID = clickID;
         this.hightlightColor = hightlightColor;
-        this.clickColor = clickColor;
+        this.isCentered = isCentered;
+    }
+    public RenderableCallbackIDButton(TextRenderer textRenderer, Text text, int x, int y, int width, int height, int color, int hightlightColor, boolean isCentered) {
+        super(x, y, width, height, color);
+        this.textRenderer = textRenderer;
+        this.text = text;
+        this.listRect = new RenderableRectangleObject(0,0,0,0);
+        this.hightlightColor = hightlightColor;
         this.isCentered = isCentered;
     }
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, int parentx, int parenty, int parentWidth, int parentHeight) {
-        int dx = (int) (x+parentx + (parentWidth*this.xBinding) + this.scrollingX);
-        int dy = (int) (y+parenty + (parentHeight*this.yBinding) + this.scrollingY);
+        int dx = getScreenPosition().x;
+        int dy = getScreenPosition().y;
         Point center = new Point(dx+(width/2),dy+(height/2));
 
 
@@ -41,7 +45,7 @@ public class RenderableEntryButton extends RenderableRectangleObject implements 
 
         int drawColor;
         Point mouse = new Point(mouseX,mouseY);
-        if ((mouseX > dx && mouseX < dx+width && mouseY > dy && mouseY < dy+height)) {
+        if (mouseX > dx && mouseX < dx+width && mouseY > dy && mouseY < dy+height) {
             drawColor = this.hightlightColor;
         } else {
             drawColor = this.color;
@@ -50,15 +54,9 @@ public class RenderableEntryButton extends RenderableRectangleObject implements 
 
         context.fill(dx, dy, dx+width, dy+height, drawColor);
         if (isCentered) {
-            context.drawCenteredTextWithShadow(textRenderer,text,center.x,(center.y-(textRenderer.fontHeight/2))+1,0xffffff);
+            context.drawText(textRenderer,text,(center.x-(textRenderer.getWidth(text.getString())/2))+1,(center.y-(textRenderer.fontHeight/2))+1,0xffffff, false);
         } else {
-            String cutText;
-            if (text.getString().length() >= 20){
-                cutText = text.getString().substring(0,19)+"...";
-            } else {
-                cutText = text.getString();
-            }
-            context.drawText(textRenderer,cutText,dx+5,(center.y-(textRenderer.fontHeight/2))+1,0xffffff, false);
+            context.drawText(textRenderer,text,dx+5,(center.y-(textRenderer.fontHeight/2))+1,0xffffff, false);
         }
 
 
@@ -72,4 +70,9 @@ public class RenderableEntryButton extends RenderableRectangleObject implements 
         this.scrollingX = MathUtils.lerp(this.scrollingX, this.lerpcrollingX, this.lerpScrollAmount);
         this.scrollingY = MathUtils.lerp(this.scrollingY, this.lerpcrollingY, this.lerpScrollAmount);
     }
+
+
+
+    @Override
+    public void onClickCallback(double mouseX, double mouseY, int button) { }
 }
