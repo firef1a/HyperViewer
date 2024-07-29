@@ -13,32 +13,33 @@ import net.minecraft.client.gui.widget.Widget;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import org.jetbrains.annotations.NotNull;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 
-public class RenderableCodespaceObject extends RenderableRectangleObject {
-    private static TextRenderer textRenderer;
+public class RenderableCodespaceObject extends RenderableRectangleObject implements ButtonObject{
+    private TextRenderer textRenderer;
     public int x;
     public int y;
-    public static int width;
-    public static int height;
+    public int width;
+    public int height;
     public ArrayList<RenderableCodespaceObject> siblings;
     public ArrayList<RenderableCodespaceObject> preSiblings;
     public ArrayList<Widget> widgets;
     public int color;
-    public RenderableCodespaceObject parent;
+    public RenderableRectangleObject parent;
     public RenderableCodespaceObject listRect;
 
-    public int xBinding = 0;
-    public int yBinding = 0;
+    public float xBinding = 0;
+    public float yBinding = 0;
 
     public RectBorder topBorder = new RectBorder(false);
     public RectBorder rightBorder = new RectBorder(false);
     public RectBorder bottomBorder = new RectBorder(false);
     public RectBorder leftBorder = new RectBorder(false);
 
-    public static CodeScreen codeScreen;
+    public CodeScreen codeScreen;
     private boolean isFocused = false;
 
     public static int lineHeight = 12;
@@ -98,7 +99,7 @@ public class RenderableCodespaceObject extends RenderableRectangleObject {
 
     }
 
-    public static int getMaxScrollX() {
+    public int getMaxScrollX() {
         int max_codespace_scrollX = 0;
         int margin = 300;
         if (!codeScreen.functionEntryList.isEmpty()) {
@@ -113,7 +114,7 @@ public class RenderableCodespaceObject extends RenderableRectangleObject {
     }
 
 
-    public static int getMaxScrollY() {
+    public int getMaxScrollY() {
         int codespace_size_before_scroll = 30;
         int max_codespace_scrollY = 0;
         int margin = 5;
@@ -149,22 +150,22 @@ public class RenderableCodespaceObject extends RenderableRectangleObject {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, int parentx, int parenty, int parentWidth, int parentHeight) {
-        int dx = (int) (x+parentx + (parentWidth*this.xBinding));
-        int dy = (int) (y+parenty + (parentHeight*this.yBinding));
-        int dx2 = dx+this.width;
-        int dy2 = dy+this.width;
+        int dx = (int) (x + parentx + (parentWidth * this.xBinding));
+        int dy = (int) (y + parenty + (parentHeight * this.yBinding));
+        int dx2 = dx + this.width;
+        int dy2 = dy + this.width;
 
         context.enableScissor(dx, dy, dx2, dy2);
-        context.fill(dx, dy, dx+width, dy+height, color);
+        context.fill(dx, dy, dx + width, dy + height, color);
 
-        int scrollx = (int) (dx+scrollingX);
-        int scrolly = (int) (dy+scrollingY);
+        int scrollx = (int) (dx + scrollingX);
+        int scrolly = (int) (dy + scrollingY);
 
-        preSiblings.forEach(obj -> obj.render(context, mouseX, mouseY, scrollx,scrolly,scrollx+width,scrolly+height));
+        preSiblings.forEach(obj -> obj.render(context, mouseX, mouseY, scrollx, scrolly, scrollx + width, scrolly + height));
 
         //context.fill(scrollx, scrolly, scrollx+width, scrolly+height, color);
 
-        siblings.forEach(obj -> obj.render(context, mouseX, mouseY, scrollx,scrolly,scrollx+width,scrolly+height));
+        siblings.forEach(obj -> obj.render(context, mouseX, mouseY, scrollx, scrolly, scrollx + width, scrolly + height));
 
         if (!codeScreen.functionEntryList.isEmpty()) {
             FunctionEntry function = codeScreen.functionEntryList.get(Firemod.functionDataManager.focusedFunctionEntry);
@@ -215,15 +216,41 @@ public class RenderableCodespaceObject extends RenderableRectangleObject {
             context.drawCenteredTextWithShadow(textRenderer, "its quite lonely in here... click the ⏻ to start using codeviewer!", center.x, center.y, 0xffffff);
         }
 
-        if (this.topBorder.enabled)    { context.fill(scrollx, scrolly-this.topBorder.size, scrollx+width, scrolly, this.topBorder.color); }
-        if (this.bottomBorder.enabled) { context.fill(scrollx, scrolly+height, scrollx+width, scrolly+height+this.bottomBorder.size, this.bottomBorder.color); }
-        if (this.rightBorder.enabled)  { context.fill(scrollx+    width, scrolly, scrollx+width+this.rightBorder.size, scrolly+height, this.rightBorder.color); }
-        if (this.leftBorder.enabled)   { context.fill(scrollx-this.leftBorder.size, scrolly, scrollx, scrolly+height, this.leftBorder.color); }
+        if (this.topBorder.enabled) {
+            context.fill(scrollx, scrolly - this.topBorder.size, scrollx + width, scrolly, this.topBorder.color);
+        }
+        if (this.bottomBorder.enabled) {
+            context.fill(scrollx, scrolly + height, scrollx + width, scrolly + height + this.bottomBorder.size, this.bottomBorder.color);
+        }
+        if (this.rightBorder.enabled) {
+            context.fill(scrollx + width, scrolly, scrollx + width + this.rightBorder.size, scrolly + height, this.rightBorder.color);
+        }
+        if (this.leftBorder.enabled) {
+            context.fill(scrollx - this.leftBorder.size, scrolly, scrollx, scrolly + height, this.leftBorder.color);
+        }
 
         this.scrollingX = MathUtils.lerp(this.scrollingX, this.lerpcrollingX, this.lerpScrollAmount);
         this.scrollingY = MathUtils.lerp(this.scrollingY, this.lerpcrollingY, this.lerpScrollAmount);
 
         context.disableScissor();
 
+    }
+
+    @Override
+    public Point getScreenPosition() {
+        int xval = (int) (this.x);
+        int yval = (int) (this.y);
+        if (this.parent == null) {
+            return new Point(xval, yval);
+        } else {
+            Firemod.LOGGER.info("WIDTH PARENT {} {}", parent.width, this.xBinding);
+            Point parentPoint = this.parent.getScreenPosition();
+            return new Point(parentPoint.x+xval+(parent.width*this.xBinding),parentPoint.y+yval+(parent.height*this.yBinding));
+        }
+    }
+    @Override
+    public boolean isPointInside(@NotNull Point point){
+        Point screenpos = getScreenPosition();
+        return point.x > screenpos.x && point.x < screenpos.x + width && point.y > screenpos.y && point.y < screenpos.y + height;
     }
 }

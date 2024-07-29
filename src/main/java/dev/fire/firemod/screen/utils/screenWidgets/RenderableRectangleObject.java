@@ -86,8 +86,8 @@ public class RenderableRectangleObject implements ButtonObject {
     }
 
     public Point getScreenPosition() {
-        int xval = (int) (this.x);
-        int yval = (int) (this.y);
+        int xval = (int) (this.x+this.scrollingX);
+        int yval = (int) (this.y+this.scrollingY);
         if (this.parent == null) {
             return new Point(xval, yval);
         } else {
@@ -105,6 +105,11 @@ public class RenderableRectangleObject implements ButtonObject {
     public int setAlpha(int color, float alpha) {return (color+ ((int)(alpha*255)<<24));}
 
     public void addSibling(RenderableRectangleObject object) {
+        object.parent = this;
+        siblings.add(object);
+    }
+
+    public void addSibling(RenderableCodespaceObject object) {
         object.parent = this;
         siblings.add(object);
     }

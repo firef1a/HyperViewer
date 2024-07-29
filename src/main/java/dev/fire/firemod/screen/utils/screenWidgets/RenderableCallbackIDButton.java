@@ -34,8 +34,8 @@ public class RenderableCallbackIDButton extends RenderableRectangleObject implem
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, int parentx, int parenty, int parentWidth, int parentHeight) {
-        int dx = getScreenPosition().x;
-        int dy = getScreenPosition().y;
+        int dx = (int) (x+parentx + (parentWidth*this.xBinding) + this.scrollingX);
+        int dy = (int) (y+parenty + (parentHeight*this.yBinding) + this.scrollingY);
         Point center = new Point(dx+(width/2),dy+(height/2));
 
 

@@ -168,7 +168,7 @@ public class CodeScreen extends Screen {
         // codespace
         this.codespace = new RenderableCodespaceObject(textRenderer, this.sidebar.rightBorder.size,this.toolbar.bottomBorder.size, (this.width-this.sidebar.width)-this.sidebar.rightBorder.size,(this.height-this.toolbar.height)-this.toolbar.bottomBorder.size, setAlpha(CODESPACE_COLOR,1), this);
         this.codespace.setBinding(1,0);
-        this.sidebar.addSibling(codespace);
+        this.sidebar.addSibling(this.codespace);
 
 
         //Point codespaceScreenPos = codespace.getScreenPosition();
@@ -280,8 +280,8 @@ public class CodeScreen extends Screen {
             button.setLeftBorder(true, setAlpha(entry.getFuncColor(entry.functionType),1f),borderSize);
 
 
-            RenderableCallbackIDButton callbackButton = new RenderableCallbackIDButton(this.textRenderer, Text.empty(), 0, 0, cbWidth,cbHeight, setAlpha(0xf0573c, 1f),setAlpha(0xed806d, 1f), i, true);            callbackButton.setBinding(0,0);
-            callbackButton.setBinding(1,0);
+            RenderableCallbackIDButton callbackButton = new RenderableCallbackIDButton(this.textRenderer, Text.empty(), (width+cbWidth)-1, 0, cbWidth,cbHeight, setAlpha(0xf0573c, 1f),setAlpha(0xed806d, 1f), i, true);            callbackButton.setBinding(0,0);
+            //callbackButton.setBinding(1,0);
             button.addSibling(callbackButton);
 
             if (entry.functionName.toLowerCase().contains(this.searchBarText.toLowerCase())){
@@ -292,38 +292,7 @@ public class CodeScreen extends Screen {
         }
     }
 
-    private void old(ArrayList<FunctionEntry> arrayList) {
-        int width;
-        int height = 13;
-        int margin = 7;
-        int heightMargin = 3;
-        int defaultColor = setAlpha(0x3e3f42,1f);
-        int hightlightColor = setAlpha(0x434447,1f);
-        int clickColor = setAlpha(0x4b4c4f,1f);
-        int x;
-        int y;
-        int borderSize = margin-5;
-
-        this.listRect.siblings.clear();
-        for (int i = 0; i < arrayList.size(); i++) {
-
-            FunctionEntry entry = arrayList.get(i);
-            x = margin;
-            y = (i*(height+heightMargin)) + (this.searchBarRect.y+this.searchBarRect.height+this.searchBarRect.bottomBorder.size+5);
-            width = this.sidebar.width-(margin*2);
-            RenderableEntryButton button = new RenderableEntryButton(this.textRenderer, Text.literal(entry.functionName), x, y, width+borderSize, height, defaultColor, hightlightColor, clickColor, i, false);
-            button.setLeftBorder(true, setAlpha(entry.getFuncColor(entry.functionType),1f),borderSize);
-
-            this.listRect.addSibling(button);
-
-        }
-    }
-
     private int setAlpha(int color, float alpha) {return (color+ ((int)(alpha*255)<<24));}
-
-    public Point getCenter(int cx, int cy, int width, int height) {
-        return (new Point(cx-width/2,cy-height/2));
-    }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
@@ -331,8 +300,8 @@ public class CodeScreen extends Screen {
         double scroll_amountX = horizontalAmount;
         double scroll_amountY = verticalAmount*30f;
 
-        int max_codespace_scrollY = RenderableCodespaceObject.getMaxScrollY();
-        int max_codespace_scrollX = RenderableCodespaceObject.getMaxScrollX();
+        int max_codespace_scrollX = codespace.getMaxScrollX();
+        int max_codespace_scrollY = codespace.getMaxScrollY();
 
         int function_list_size_before_scroll = 24;
         int max_function_scroll = Math.min(-1*(this.listRect.siblings.size()-function_list_size_before_scroll)*16, 0);
@@ -359,7 +328,7 @@ public class CodeScreen extends Screen {
             if (this.codespace.lerpcrollingY + scroll_amountY >= 0) {
                 this.codespace.lerpcrollingY = 0;
             } else if (this.codespace.lerpcrollingY + scroll_amountY < max_codespace_scrollY) {
-                this.codespace.lerpcrollingY = (double) max_codespace_scrollY;
+                this.codespace.lerpcrollingY = max_codespace_scrollY;
             } else {
                 this.codespace.lerpcrollingY += scroll_amountY;
             }
@@ -367,7 +336,7 @@ public class CodeScreen extends Screen {
             if (this.codespace.lerpcrollingX + scroll_amountX >= 0) {
                 this.codespace.lerpcrollingX = 0;
             } else if (this.codespace.lerpcrollingX + scroll_amountX < max_codespace_scrollX) {
-                this.codespace.lerpcrollingX = (double) max_codespace_scrollX;
+                this.codespace.lerpcrollingX = max_codespace_scrollX;
             } else {
                 this.codespace.lerpcrollingX += scroll_amountX;
             }
@@ -405,12 +374,11 @@ public class CodeScreen extends Screen {
             String codeData = "";
             int i = 0;
             for (FunctionEntry functionEntry : Firemod.functionDataManager.functionEntryArrayList) {
-
                 codeData = codeData + functionEntry.rawJsonString;
                 if (i != Firemod.functionDataManager.functionEntryArrayList.size()-1){
                     codeData = codeData + "\n";
                 }
-                        i++;
+                i++;
             }
 
             try {
@@ -434,7 +402,7 @@ public class CodeScreen extends Screen {
                     }
 
                     displayMessage = Text.literal("Successfully loaded code from file \"" + saveName + "\"").withColor(0xb592f7);
-                } catch (IOException e) {
+                } catch (IOException | NullPointerException e) {
                     displayMessage = Text.literal("Unable to load file to disk or invalid file: " + e.getMessage()).withColor(0xf25d55);
                 }
             } else {
@@ -442,29 +410,31 @@ public class CodeScreen extends Screen {
             }
             ChatManager.displayChatMessageToPlayer(displayMessage);
         }
-
-        // function list code + delete func code
-        for (RenderableRectangleObject rect : this.listRect.siblings) {
-            for (RenderableRectangleObject sibling : rect.siblings) {
-                if (sibling.isPointInside(mouse)) {
-                    Firemod.functionDataManager.remove(sibling.clickID);
-                    int focusedTabLength = Firemod.functionDataManager.functionEntryArrayList.size()-1;
-                    if (focusedTabLength < Firemod.functionDataManager.focusedFunctionEntry) {
-                        Firemod.functionDataManager.focusedFunctionEntry = focusedTabLength;
+        if (this.sidebar.isPointInside(mouse)) {
+            for (RenderableRectangleObject rect : this.listRect.siblings) {
+                for (RenderableRectangleObject sibling : rect.siblings) {
+                    if (sibling.isPointInside(mouse)) {
+                        Firemod.functionDataManager.remove(sibling.clickID);
+                        int focusedTabLength = Firemod.functionDataManager.functionEntryArrayList.size()-1;
+                        if (focusedTabLength < Firemod.functionDataManager.focusedFunctionEntry) {
+                            Firemod.functionDataManager.focusedFunctionEntry = focusedTabLength;
+                        }
+                        hasClicked = true;
+                        break;
                     }
-                    hasClicked = true;
+                }
+
+                if (hasClicked) { continue; }
+
+                if (rect.isPointInside(mouse)) {
+                    Firemod.functionDataManager.focusedFunctionEntry = rect.clickID;
+                    codespace.resetScrolling();
                     break;
                 }
             }
-
-            if (hasClicked) { continue; }
-
-            if (rect.isPointInside(mouse)) {
-                Firemod.functionDataManager.focusedFunctionEntry = rect.clickID;
-                codespace.resetScrolling();
-                break;
-            }
         }
+        // function list code + delete func code
+
         codespace.mouseClicked(mouseX, mouseY, button);
 
         return super.mouseClicked(mouseX, mouseY, button);
