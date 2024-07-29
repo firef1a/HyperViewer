@@ -9,4 +9,5 @@ public class ChatLogger {
     public ChatLogger() {
         chatLog = new ArrayList<>();
     }
+    public void appendChat(Text text) {chatLog.add(text); }
 }

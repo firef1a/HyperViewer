@@ -1,5 +1,6 @@
 package dev.fire.firemod.screen.chat;
 import dev.fire.firemod.Firemod;
+import dev.fire.firemod.devutils.OSValidator;
 import dev.fire.firemod.external.SystemIOManager;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
@@ -23,7 +24,9 @@ public class ChatUtil {
                 String player = getContent(siblings.get(1));
                 String reason = getContent(siblings.get(4));
 
-                SystemIOManager.sendDesktopNotification(player + " requested a support session", reason, 1000*5, "critical");
+                if (OSValidator.isUnix()) {
+                    SystemIOManager.sendDesktopNotification(player + " requested a support session", reason, 1000*5, "critical");
+                }
 
                 Firemod.MOBILE_NOTIFICATION_MANAGER.sendMobileNotification(player + " entered the queue.", reason);
 

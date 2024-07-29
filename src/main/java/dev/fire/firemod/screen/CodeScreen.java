@@ -4,8 +4,6 @@ import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
 import dev.fire.firemod.Firemod;
 import dev.fire.firemod.screen.utils.*;
-import dev.fire.firemod.screen.utils.RenderableCodespaceObject;
-import dev.fire.firemod.screen.utils.templateUtils.TestData;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
@@ -243,7 +241,7 @@ public class CodeScreen extends Screen {
             x = borderSize;
             y = ((i-skipIminus)*(height+heightMargin)) + (this.searchBarRect.height+this.searchBarRect.bottomBorder.size+4) ;
             width = this.sidebar.width-(margin*2);
-            RenderableRectButton button = new RenderableRectButton(this.textRenderer, Text.literal(entry.functionName), x, y, width+borderSize, height, defaultColor, hightlightColor, clickColor, i, false);
+            RenderableEntryButton button = new RenderableEntryButton(this.textRenderer, Text.literal(entry.functionName), x, y, width+borderSize, height, defaultColor, hightlightColor, clickColor, i, false);
             button.setLeftBorder(true, setAlpha(entry.getFuncColor(entry.functionType),1f),borderSize);
             if (entry.functionName.toLowerCase().contains(this.searchBarText.toLowerCase())){
                 this.listRect.addSibling(button);
@@ -272,7 +270,7 @@ public class CodeScreen extends Screen {
             x = margin;
             y = (i*(height+heightMargin)) + (this.searchBarRect.y+this.searchBarRect.height+this.searchBarRect.bottomBorder.size+5);
             width = this.sidebar.width-(margin*2);
-            RenderableRectButton button = new RenderableRectButton(this.textRenderer, Text.literal(entry.functionName), x, y, width+borderSize, height, defaultColor, hightlightColor, clickColor, i, false);
+            RenderableEntryButton button = new RenderableEntryButton(this.textRenderer, Text.literal(entry.functionName), x, y, width+borderSize, height, defaultColor, hightlightColor, clickColor, i, false);
             button.setLeftBorder(true, setAlpha(entry.getFuncColor(entry.functionType),1f),borderSize);
 
             this.listRect.addSibling(button);

@@ -1,9 +1,6 @@
 package dev.fire.firemod.screen.utils;
 
-import com.google.gson.JsonObject;
 import dev.fire.firemod.Firemod;
-import dev.fire.firemod.screen.CodeScreen;
-import dev.fire.firemod.screen.utils.templateUtils.CodeLine;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -18,7 +15,7 @@ public class FunctionEntry {
     public String functionName;
     public String functionType;
     public String rawJsonString;
-    public ArrayList<CodeLine> formattedCodeList;
+    public ArrayList<String> code;
     public int longestline;
 
     public static Map<String, Integer> typeColors = Map.ofEntries(
@@ -119,8 +116,8 @@ public class FunctionEntry {
 
     }
 
-    public static ArrayList<CodeLine> getCodeListFromTemplate(Template template) {
-        ArrayList<CodeLine> codeList = new ArrayList<>();
+    public static ArrayList<String> getCodeListFromTemplate(Template template) {
+        ArrayList<String> codeList = new ArrayList<>();
 
         int indent = 0;
         int changeIndent = 0;
@@ -361,7 +358,11 @@ public class FunctionEntry {
             if (has_colon) {
                 appendText.append(Text.literal(":"));
             }
-            codeList.add(new CodeLine(appendText, indent));
+            String appendIndent = "";
+            for (int ai = 0; ai < indent; ai++) {
+                appendIndent = appendIndent + " ";
+            }
+            codeList.add(appendIndent + appendText);
             indent += changeIndent;
         }
 
@@ -370,24 +371,15 @@ public class FunctionEntry {
 
     public static FunctionEntry getFunctionEntryFromJson(String rawJsonString) {
         Template template = getTemplateFromJson(rawJsonString);
-        ArrayList<CodeLine> codeList = getCodeListFromTemplate(template);
+        ArrayList<String> codeList = getCodeListFromTemplate(template);
         return new FunctionEntry(template.name, template.type, codeList);
     }
 
-    private FunctionEntry(String functionName, String functionType, ArrayList<CodeLine> formattedCodeList) {
+    private FunctionEntry(String functionName, String functionType, ArrayList<String> code) {
         this.functionName = functionName;
         this.functionType = functionType;
-        this.formattedCodeList = formattedCodeList;
-        this.longestline = 0;
-        int linelen = 0;
-        int i = 0;
-        for (CodeLine codeLine : formattedCodeList) {
-            if (codeLine.text.getString().length() > linelen) {
-                linelen = codeLine.text.getString().length();
-                longestline = i;
-            }
-            i++;
-        }
+        this.code = code;
+
     }
 
     public int getFuncColor(String type) {
