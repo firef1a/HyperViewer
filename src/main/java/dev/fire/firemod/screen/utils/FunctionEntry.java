@@ -180,7 +180,7 @@ public class FunctionEntry {
                     appendText.append(Text.literal(block.action).withColor(0xbaa182));
 
                 } else if (Objects.equals(block.block, "select_obj")) {
-                    appendText.append(Text.literal(block.block));
+                    appendText.append(Text.literal("select"));
                     appendText.append(Text.literal("."));
                     appendText.append(Text.literal(block.action).withColor(0xc781de));
 
@@ -194,7 +194,7 @@ public class FunctionEntry {
                     appendText.append(Text.literal("."));
                     appendText.append(Text.literal(block.action).withColor(0xbad19b));
                 }  else if (Objects.equals(block.block, "set_var")) {
-                    appendText.append(Text.literal(block.block));
+                    appendText.append(Text.literal("set"));
                     appendText.append(Text.literal("."));
                     appendText.append(Text.literal(block.action).withColor(0xfffbc9));
                 } else if (Objects.equals(block.block, "game_action")) {
@@ -209,11 +209,7 @@ public class FunctionEntry {
                     appendText.append(Text.literal("call_process"));
                     appendText.append(Text.literal(" "));
                     appendText.append(Text.literal(block.data).withColor(typeColors.get("process")));
-                }
-
-
-
-                else if (Objects.equals(block.block, "repeat")) {
+                } else if (Objects.equals(block.block, "repeat")) {
                     appendText.append(Text.literal("repeat"));
                     appendText.append(Text.literal("."));
                     appendText.append(Text.literal(block.action).withColor(0x79d4cb));

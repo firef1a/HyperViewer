@@ -8,7 +8,7 @@ import net.minecraft.client.gui.widget.Widget;
 
 import java.util.ArrayList;
 
-public class RenderableRectangleObject implements ButtonObject {
+public class RenderableRectangleObject implements RenderableObject {
     public int x;
     public int y;
     public int width;
@@ -180,7 +180,4 @@ public class RenderableRectangleObject implements ButtonObject {
         this.bottomBorder.color = color;
         this.bottomBorder.size = size;
     }
-
-    @Override
-    public void onClickCallback(double mouseX, double mouseY, int button) { }
 }

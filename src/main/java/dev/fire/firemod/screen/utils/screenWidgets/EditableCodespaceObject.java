@@ -18,7 +18,7 @@ import java.util.Locale;
 
 // ignore this, this is for a future planned update where the code can be edited, might not go through with it though due to the immense technical challenges with parsing code :D
 
-public class EditableCodespaceObject extends RenderableRectangleObject {
+public class EditableCodespaceObject extends RenderableRectangleObject implements RenderableObject {
     private final TextRenderer textRenderer;
     public int x;
     public int y;
@@ -67,7 +67,6 @@ public class EditableCodespaceObject extends RenderableRectangleObject {
                 "Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur",
                 "Excepteur sint occaecat cupidatat non proident",
                 "sunt in culpa qui officia deserunt mollit anim id est laborum"
-
         ));
         this.x = x;
         this.y = y;

@@ -3,6 +3,7 @@ package dev.fire.firemod.viewer;
 import dev.fire.firemod.Firemod;
 import dev.fire.firemod.screen.utils.FunctionEntry;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 public class FunctionDataManager {
     public ArrayList<FunctionEntry> functionEntryArrayList;

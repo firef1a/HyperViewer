@@ -8,7 +8,7 @@ import net.minecraft.text.Text;
 
 import javax.security.auth.callback.Callback;
 
-public class RenderableToggleableButton extends RenderableRectangleObject implements ButtonObject {
+public class RenderableToggleableButton extends RenderableRectangleObject implements RenderableObject {
     private TextRenderer textRenderer;
     public Text text;
     private Callback callback;
@@ -79,8 +79,4 @@ public class RenderableToggleableButton extends RenderableRectangleObject implem
         this.scrollingY = MathUtils.lerp(this.scrollingY, this.lerpcrollingY, this.lerpScrollAmount);
     }
 
-
-
-    @Override
-    public void onClickCallback(double mouseX, double mouseY, int button) { }
 }

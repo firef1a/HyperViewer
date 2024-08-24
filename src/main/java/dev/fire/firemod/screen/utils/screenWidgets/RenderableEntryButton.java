@@ -8,7 +8,7 @@ import net.minecraft.text.Text;
 
 import javax.security.auth.callback.Callback;
 
-public class RenderableEntryButton extends RenderableRectangleObject implements ButtonObject {
+public class RenderableEntryButton extends RenderableRectangleObject implements RenderableObject {
     private TextRenderer textRenderer;
     public Text text;
     private Callback callback;

@@ -18,7 +18,7 @@ import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 
-public class RenderableCodespaceObject extends RenderableRectangleObject implements ButtonObject{
+public class RenderableCodespaceObject extends RenderableRectangleObject implements RenderableObject {
     private TextRenderer textRenderer;
     public int x;
     public int y;
@@ -96,7 +96,6 @@ public class RenderableCodespaceObject extends RenderableRectangleObject impleme
                 lerpcrollingX += addX;
             }
         }
-
     }
 
     public int getMaxScrollX() {
