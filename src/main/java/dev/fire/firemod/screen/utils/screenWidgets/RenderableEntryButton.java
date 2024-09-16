@@ -1,13 +1,14 @@
-package dev.fire.firemod.screen.utils;
+package dev.fire.firemod.screen.utils.screenWidgets;
 
 import dev.fire.firemod.devutils.MathUtils;
+import dev.fire.firemod.screen.utils.Point;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.text.Text;
 
 import javax.security.auth.callback.Callback;
 
-public class RenderableRectButton extends RenderableRectangleObject{
+public class RenderableEntryButton extends RenderableRectangleObject implements RenderableObject {
     private TextRenderer textRenderer;
     public Text text;
     private Callback callback;
@@ -18,7 +19,7 @@ public class RenderableRectButton extends RenderableRectangleObject{
     public boolean isCentered;
 
 
-    public RenderableRectButton(TextRenderer textRenderer, Text text,  int x, int y, int width, int height, int color, int hightlightColor, int clickColor, int clickID, boolean isCentered) {
+    public RenderableEntryButton(TextRenderer textRenderer, Text text, int x, int y, int width, int height, int color, int hightlightColor, int clickColor, int clickID, boolean isCentered) {
         super(x, y, width, height, color, clickID);
         this.textRenderer = textRenderer;
         this.text = text;
@@ -39,7 +40,7 @@ public class RenderableRectButton extends RenderableRectangleObject{
 
         int drawColor;
         Point mouse = new Point(mouseX,mouseY);
-        if (mouseX > dx && mouseX < dx+width && mouseY > dy && mouseY < dy+height) {
+        if ((mouseX > dx && mouseX < dx+width && mouseY > dy && mouseY < dy+height)) {
             drawColor = this.hightlightColor;
         } else {
             drawColor = this.color;

@@ -1,15 +1,13 @@
-package dev.fire.firemod.screen.utils;
+package dev.fire.firemod.screen.utils.screenWidgets;
 
 import dev.fire.firemod.Firemod;
 import dev.fire.firemod.devutils.MathUtils;
-import dev.fire.firemod.screen.CodeScreen;
-import dev.fire.firemod.screen.utils.templateUtils.CodeLine;
+import dev.fire.firemod.screen.screens.CodeScreen;
+
+import dev.fire.firemod.screen.utils.*;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.Widget;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import org.lwjgl.glfw.GLFW;
 
@@ -18,8 +16,10 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-public class EditableCodespaceObject extends RenderableRectangleObject {
-    private TextRenderer textRenderer;
+// ignore this, this is for a future planned update where the code can be edited, might not go through with it though due to the immense technical challenges with parsing code :D
+
+public class EditableCodespaceObject extends RenderableRectangleObject implements RenderableObject {
+    private final TextRenderer textRenderer;
     public int x;
     public int y;
     public int width;
@@ -95,8 +95,8 @@ public class EditableCodespaceObject extends RenderableRectangleObject {
             codeScreen.searchBar.setFocused(false);
             String key = String.valueOf((char) keyCode).toLowerCase(Locale.ROOT);
             if (isSneaking) {
-                if (KeyInputLister.uppercaseSpecialCharaters.containsKey(key)) {
-                    key = KeyInputLister.uppercaseSpecialCharaters.get(key);
+                if (KeyInputData.uppercaseSpecialCharaters.containsKey(key)) {
+                    key = KeyInputData.uppercaseSpecialCharaters.get(key);
                 } else {
                     key = key.toUpperCase(Locale.ROOT);
                 }
@@ -118,43 +118,147 @@ public class EditableCodespaceObject extends RenderableRectangleObject {
             } else if (keyCode == GLFW.GLFW_KEY_UP) {
                 moveLineY = -1;
             } else if (keyCode == GLFW.GLFW_KEY_BACKSPACE || keyCode == GLFW.GLFW_KEY_DELETE) {
-                if (cursor.stringX > 0) {
+                if (isSelecting) {
+                    isSelecting = false;
+                    if (selectionStart.lineY == selectionEnd.lineY) {
+                        String getline = this.textLines.get(this.selectionStart.lineY);
 
-                    //Firemod.LOGGER.info(key);
-                    String line = this.textLines.get(this.cursor.lineY);
-                    ArrayList<String> lineList = new ArrayList<String>(Arrays.asList(line.split("")));
-                    lineList.remove(stringX - 1);
+                        this.cursor.stringX = selectionStart.stringX;
+                        this.cursor.lineY = this.selectionStart.lineY;
+                        this.textLines.set(this.selectionStart.lineY, getline.substring(0, selectionStart.stringX)+getline.substring(selectionEnd.stringX));
 
-                    this.cursor.stringX -= 1;
-                    this.textLines.set(this.cursor.lineY, String.join("", lineList));
-                } else if (cursor.stringX == 0) {
-                    if (cursor.lineY > 0) {
-                        String oldLine = this.textLines.get(cursor.lineY);
-                        this.textLines.remove(cursor.lineY);
-                        this.cursor.lineY--;
-                        this.cursor.stringX = this.textLines.get(cursor.lineY).length();
-                        this.textLines.set(cursor.lineY, this.textLines.get(cursor.lineY) + oldLine);
+                    } else {
+                        ArrayList<String> newText = new ArrayList<>();
+                        for (int i = 0; i < textLines.size(); i++) {
+                            String text = this.textLines.get(i);
+                            if (selectionStart.lineY == i) {
+                                newText.add(text.substring(0, selectionStart.stringX));
+                            } else if (selectionEnd.lineY == i && !(selectionEnd.stringX >= text.length())) {
+                                newText.add(text.substring(selectionEnd.stringX));
+                            } else if (i < selectionStart.lineY || selectionEnd.lineY < i) {
+                                newText.add(text);
+                            }
+                        }
+                        this.textLines = newText;
+
+                        this.cursor.lineY = selectionStart.lineY;
+                        this.cursor.stringX = selectionStart.stringX;
+                    }
+                } else {
+                    if (cursor.stringX > 0) {
+
+                        //Firemod.LOGGER.info(key);
+                        String line = this.textLines.get(this.cursor.lineY);
+                        ArrayList<String> lineList = new ArrayList<String>(Arrays.asList(line.split("")));
+                        lineList.remove(stringX - 1);
+
+                        this.cursor.stringX -= 1;
+                        this.textLines.set(this.cursor.lineY, String.join("", lineList));
+                    } else if (cursor.stringX == 0) {
+                        if (cursor.lineY > 0) {
+                            String oldLine = this.textLines.get(cursor.lineY);
+                            this.textLines.remove(cursor.lineY);
+                            this.cursor.lineY--;
+                            this.cursor.stringX = this.textLines.get(cursor.lineY).length();
+                            this.textLines.set(cursor.lineY, this.textLines.get(cursor.lineY) + oldLine);
+                        }
                     }
                 }
             } else if (keyCode == GLFW.GLFW_KEY_ENTER) {
-                String substring = this.textLines.get(cursor.lineY).substring(cursor.stringX);
-                this.textLines.set(cursor.lineY, this.textLines.get(cursor.lineY).substring(0, cursor.stringX));
-                cursor.stringX = 0;
-                cursor.lineY++;
-                this.textLines.add(cursor.lineY, substring);
+                if (isSelecting) {
+                    isSelecting = false;
+                    if (selectionStart.lineY == selectionEnd.lineY) {
+                        String getline = this.textLines.get(this.selectionStart.lineY);
 
+                        this.cursor.stringX = 0;
+                        this.cursor.lineY = this.selectionStart.lineY+1;
+                        this.textLines.set(this.selectionStart.lineY+1, getline.substring(selectionEnd.stringX));
+                        this.textLines.set(this.selectionStart.lineY, getline.substring(0, selectionStart.stringX));
+
+                    } else {
+                        ArrayList<String> newText = new ArrayList<>();
+                        for (int i = 0; i < textLines.size(); i++) {
+                            String text = this.textLines.get(i);
+                            if (selectionStart.lineY == i) {
+                                newText.add(text.substring(0, selectionStart.stringX));
+                            } else if (selectionEnd.lineY == i && !(selectionEnd.stringX >= text.length())) {
+                                newText.add(text.substring(selectionEnd.stringX));
+                            } else if (i < selectionStart.lineY || selectionEnd.lineY < i) {
+                                newText.add(text);
+                            }
+                        }
+                        this.textLines = newText;
+
+                        String line = this.textLines.get(this.selectionStart.lineY);
+                        ArrayList<String> lineList = new ArrayList<String>(Arrays.asList(line.split("")));
+
+                        this.cursor.lineY = selectionStart.lineY+1;
+                        this.cursor.stringX = 0;
+
+                        this.textLines.set(selectionStart.lineY, String.join("", lineList));
+
+
+                    }
+                } else {
+                    String substring = this.textLines.get(cursor.lineY).substring(cursor.stringX);
+                    this.textLines.set(cursor.lineY, this.textLines.get(cursor.lineY).substring(0, cursor.stringX));
+                    cursor.stringX = 0;
+                    cursor.lineY++;
+                    this.textLines.add(cursor.lineY, substring);
+                }
             } else if (keyCode == GLFW.GLFW_KEY_A && isCtrling) {
                 isSelecting = true;
                 selectionStart.set(0,0);
                 selectionEnd.set(textLines.size()-1, textLines.get(textLines.size()-1).length());
-            } else if (KeyInputLister.validInputKeys.contains(keyCode)) {
+            } else if (KeyInputData.validInputKeys.contains(keyCode)) {
                 //Firemod.LOGGER.info(key);
-                String line = this.textLines.get(this.cursor.lineY);
-                ArrayList<String> lineList = new ArrayList<String>(Arrays.asList(line.split("")));
-                lineList.add(stringX, key);
+                if (isSelecting && !selectionStart.isEqual(selectionEnd)) {
+                    isSelecting = false;
+                    if (selectionStart.lineY == selectionEnd.lineY) {
+                        String line = this.textLines.get(this.selectionStart.lineY).substring(0, selectionStart.stringX);
+                        ArrayList<String> lineList = new ArrayList<String>(Arrays.asList(line.split("")));
+                        lineList.add(selectionStart.stringX, key);
 
-                this.cursor.stringX += 1;
-                this.textLines.set(this.cursor.lineY, String.join("", lineList));
+                        this.cursor.stringX = selectionStart.stringX+1;
+                        this.textLines.set(this.cursor.lineY, String.join("", lineList));
+                    } else {
+                        ArrayList<String> newText = new ArrayList<>();
+                        for (int i = 0; i < textLines.size(); i++) {
+                            String text = this.textLines.get(i);
+                            if (selectionStart.lineY == i) {
+                                newText.add(text.substring(0, selectionStart.stringX));
+                            } else if (selectionEnd.lineY == i && !(selectionEnd.stringX >= text.length())) {
+                                newText.add(text.substring(selectionEnd.stringX));
+                            } else if (i < selectionStart.lineY || selectionEnd.lineY < i) {
+                                newText.add(text);
+                            }
+                        }
+                        this.textLines = newText;
+
+                        String line = this.textLines.get(this.selectionStart.lineY);
+                        ArrayList<String> lineList = new ArrayList<String>(Arrays.asList(line.split("")));
+                        lineList.add(selectionStart.stringX, key);
+
+                        this.cursor.lineY = selectionStart.lineY;
+                        this.cursor.stringX = selectionStart.stringX+1;
+
+                        this.textLines.set(selectionStart.lineY, String.join("", lineList));
+
+
+                    }
+                } else {
+                    String line = this.textLines.get(this.cursor.lineY);
+                    ArrayList<String> lineList = new ArrayList<String>(Arrays.asList(line.split("")));
+                    if (stringX >= line.length()) {
+                        lineList.add(key);
+                    } else {
+                        lineList.add(stringX, key);
+                    }
+
+
+                    this.cursor.stringX += 1;
+                    this.textLines.set(this.cursor.lineY, String.join("", lineList));
+                }
             }
 
             if (moveLineY != 0 || moveStringX != 0) {
@@ -175,12 +279,16 @@ public class EditableCodespaceObject extends RenderableRectangleObject {
             }
 
         }
+        if (this.textLines.get(cursor.lineY).length() == 0) {
+            cursor.stringX = 0;
+        }
     }
 
     public void mouseClicked(double mouseX, double mouseY, int button) {
         Point mouse = new Point(mouseX, mouseY);
 
         if (this.isPointInside(mouse)) {
+            isSelecting = false;
             codeScreen.searchBar.setFocused(false);
             this.focused = true;
 

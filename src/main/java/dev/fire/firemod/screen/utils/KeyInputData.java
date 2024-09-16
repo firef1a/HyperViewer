@@ -1,20 +1,17 @@
 package dev.fire.firemod.screen.utils;
 
 
-import com.sun.jna.platform.KeyboardUtils;
-import it.unimi.dsi.fastutil.Hash;
-import net.minecraft.client.Keyboard;
-import net.minecraft.client.input.KeyCodes;
 import org.lwjgl.glfw.GLFW;
 
-import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class KeyInputLister {
+public class KeyInputData {
     private static Integer KeyCodes;
+
+    // hehehe....
     public static ArrayList<Integer> validInputKeys = new ArrayList<>(List.of(
             GLFW.GLFW_KEY_A,
             GLFW.GLFW_KEY_B,

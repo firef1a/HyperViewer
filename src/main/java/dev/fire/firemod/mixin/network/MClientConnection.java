@@ -1,6 +1,5 @@
 package dev.fire.firemod.mixin.network;
 
-import dev.fire.firemod.Firemod;
 import dev.fire.firemod.viewer.FunctionFinder;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.network.listener.PacketListener;

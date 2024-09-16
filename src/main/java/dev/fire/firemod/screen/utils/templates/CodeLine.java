@@ -1,4 +1,4 @@
-package dev.fire.firemod.screen.utils.templateUtils;
+package dev.fire.firemod.screen.utils.templates;
 
 import net.minecraft.text.Text;
 

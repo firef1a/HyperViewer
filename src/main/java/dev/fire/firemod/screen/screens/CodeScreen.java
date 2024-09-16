@@ -1,11 +1,12 @@
-package dev.fire.firemod.screen;
+package dev.fire.firemod.screen.screens;
 
 import com.google.common.collect.Lists;
 import com.mojang.blaze3d.systems.RenderSystem;
+import dev.fire.firemod.FileManager;
 import dev.fire.firemod.Firemod;
+import dev.fire.firemod.screen.chat.ChatManager;
 import dev.fire.firemod.screen.utils.*;
-import dev.fire.firemod.screen.utils.RenderableCodespaceObject;
-import dev.fire.firemod.screen.utils.templateUtils.TestData;
+import dev.fire.firemod.screen.utils.screenWidgets.*;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.Drawable;
 import net.minecraft.client.gui.Element;
@@ -14,11 +15,10 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
-
+import java.io.IOException;
 import java.util.*;
 
 public class CodeScreen extends Screen {
-    protected Text footer = Text.literal("hello");
     private boolean usingMouseToSelect = false;
     private Integer lastMouseX;
     private Integer lastMouseY;
@@ -33,9 +33,15 @@ public class CodeScreen extends Screen {
 
     public RenderableRectangleObject background;
     public RenderableRectangleObject toolbar;
-    public RenderableRectangleObject sidebar;
 
-    public EditableCodespaceObject codespace;
+    public RenderableToggleableButton toggleButton;
+    public RenderableCallbackIDButton resetButton;
+    public RenderableCallbackIDButton saveButton;
+    public RenderableCallbackIDButton uploadButton;
+
+
+    public RenderableRectangleObject sidebar;
+    public RenderableCodespaceObject codespace;
 
 
     public RenderableRectangleObject searchBarRect;
@@ -51,9 +57,10 @@ public class CodeScreen extends Screen {
     public int SEARCHBAR_MARGIN = 5;
 
     public int renderCycle = 1;
-    public int focusedFunctionTabIndex = 0;
     public String searchBarText = "";
     public String lastSearchBarText = "";
+
+    private static String saveCodeFileName = "codeDump.json";
 
     private final List<Drawable> drawables = Lists.newArrayList();
 
@@ -89,6 +96,29 @@ public class CodeScreen extends Screen {
         this.sidebar.setBinding(0,1);
         this.toolbar.addPreSibling(sidebar);
 
+        // add toolbar widgets
+
+        int widgetSize = 15;
+        int widgetX = 5;
+        int widgetY = (this.toolbar.height/2)-(widgetSize/2);
+
+        int spacing = 5+widgetSize;
+
+        this.toggleButton = new RenderableToggleableButton(textRenderer,Text.literal("⏻"), widgetX, widgetY, widgetSize,widgetSize, setAlpha(0xed5139, 1f), setAlpha(0xe87361, 1f), setAlpha(0x62e04f, 1f), setAlpha(0x82db74, 1f), Firemod.functionDataManager.enableCodeViewer, false);
+        this.toolbar.addSibling(this.toggleButton);
+        widgetX += spacing;
+
+        this.resetButton = new RenderableCallbackIDButton(textRenderer,Text.literal("☈"), widgetX, widgetY, widgetSize,widgetSize, setAlpha(0xf5714c, 1f), setAlpha(0xf2967c, 1f), true);
+        this.toolbar.addSibling(this.resetButton);
+        widgetX += spacing;
+
+        this.saveButton = new RenderableCallbackIDButton(textRenderer,Text.literal("↓"), widgetX, widgetY, widgetSize,widgetSize, setAlpha(0x56baf5, 1f), setAlpha(0x8cc9ed, 1f), true);
+        this.toolbar.addSibling(this.saveButton);
+        widgetX += spacing;
+
+        this.uploadButton = new RenderableCallbackIDButton(textRenderer,Text.literal("↑"), widgetX, widgetY, widgetSize,widgetSize, setAlpha(0x915bf5, 1f), setAlpha(0xb592f7, 1f), true);
+        this.toolbar.addSibling(this.uploadButton);
+        widgetX += spacing;
 
 
 
@@ -136,9 +166,9 @@ public class CodeScreen extends Screen {
         generateFunctionList(this.functionEntryList);
 
         // codespace
-        this.codespace = new EditableCodespaceObject(textRenderer, this.sidebar.rightBorder.size,this.toolbar.bottomBorder.size, (this.width-this.sidebar.width)-this.sidebar.rightBorder.size,(this.height-this.toolbar.height)-this.toolbar.bottomBorder.size, setAlpha(CODESPACE_COLOR,1), this);
+        this.codespace = new RenderableCodespaceObject(textRenderer, this.sidebar.rightBorder.size,this.toolbar.bottomBorder.size, (this.width-this.sidebar.width)-this.sidebar.rightBorder.size,(this.height-this.toolbar.height)-this.toolbar.bottomBorder.size, setAlpha(CODESPACE_COLOR,1), this);
         this.codespace.setBinding(1,0);
-        this.sidebar.addSibling(codespace);
+        this.sidebar.addSibling(this.codespace);
 
 
         //Point codespaceScreenPos = codespace.getScreenPosition();
@@ -232,19 +262,28 @@ public class CodeScreen extends Screen {
         int defaultColor = setAlpha(0x3e3f42,1f);
         int hightlightColor = setAlpha(0x434447,1f);
         int clickColor = setAlpha(0x4b4c4f,1f);
-        int x;
-        int y;
+        int x, y, cbWidth, cbHeight;
         int skipIminus = 0;
         int borderSize = margin-5;
 
         this.listRect.siblings.clear();
         for (int i = 0; i < arrayList.size(); i++) {
             FunctionEntry entry = arrayList.get(i);
+
+            cbWidth = 3;
+            cbHeight = height;
+
             x = borderSize;
             y = ((i-skipIminus)*(height+heightMargin)) + (this.searchBarRect.height+this.searchBarRect.bottomBorder.size+4) ;
-            width = this.sidebar.width-(margin*2);
-            RenderableRectButton button = new RenderableRectButton(this.textRenderer, Text.literal(entry.functionName), x, y, width+borderSize, height, defaultColor, hightlightColor, clickColor, i, false);
+            width = (this.sidebar.width-(margin*2))-cbWidth;
+            RenderableEntryButton button = new RenderableEntryButton(this.textRenderer, Text.literal(entry.functionName), x, y, width+borderSize, height, defaultColor, hightlightColor, clickColor, i, false);
             button.setLeftBorder(true, setAlpha(entry.getFuncColor(entry.functionType),1f),borderSize);
+
+
+            RenderableCallbackIDButton callbackButton = new RenderableCallbackIDButton(this.textRenderer, Text.empty(), (width+cbWidth)-1, 0, cbWidth,cbHeight, setAlpha(0xf0573c, 1f),setAlpha(0xed806d, 1f), i, true);            callbackButton.setBinding(0,0);
+            //callbackButton.setBinding(1,0);
+            button.addSibling(callbackButton);
+
             if (entry.functionName.toLowerCase().contains(this.searchBarText.toLowerCase())){
                 this.listRect.addSibling(button);
             } else {
@@ -253,38 +292,7 @@ public class CodeScreen extends Screen {
         }
     }
 
-    private void old(ArrayList<FunctionEntry> arrayList) {
-        int width;
-        int height = 13;
-        int margin = 7;
-        int heightMargin = 3;
-        int defaultColor = setAlpha(0x3e3f42,1f);
-        int hightlightColor = setAlpha(0x434447,1f);
-        int clickColor = setAlpha(0x4b4c4f,1f);
-        int x;
-        int y;
-        int borderSize = margin-5;
-
-        this.listRect.siblings.clear();
-        for (int i = 0; i < arrayList.size(); i++) {
-
-            FunctionEntry entry = arrayList.get(i);
-            x = margin;
-            y = (i*(height+heightMargin)) + (this.searchBarRect.y+this.searchBarRect.height+this.searchBarRect.bottomBorder.size+5);
-            width = this.sidebar.width-(margin*2);
-            RenderableRectButton button = new RenderableRectButton(this.textRenderer, Text.literal(entry.functionName), x, y, width+borderSize, height, defaultColor, hightlightColor, clickColor, i, false);
-            button.setLeftBorder(true, setAlpha(entry.getFuncColor(entry.functionType),1f),borderSize);
-
-            this.listRect.addSibling(button);
-
-        }
-    }
-
     private int setAlpha(int color, float alpha) {return (color+ ((int)(alpha*255)<<24));}
-
-    public Point getCenter(int cx, int cy, int width, int height) {
-        return (new Point(cx-width/2,cy-height/2));
-    }
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double horizontalAmount, double verticalAmount) {
@@ -292,8 +300,8 @@ public class CodeScreen extends Screen {
         double scroll_amountX = horizontalAmount;
         double scroll_amountY = verticalAmount*30f;
 
-
-
+        int max_codespace_scrollX = codespace.getMaxScrollX();
+        int max_codespace_scrollY = codespace.getMaxScrollY();
 
         int function_list_size_before_scroll = 24;
         int max_function_scroll = Math.min(-1*(this.listRect.siblings.size()-function_list_size_before_scroll)*16, 0);
@@ -319,12 +327,16 @@ public class CodeScreen extends Screen {
             // Y
             if (this.codespace.lerpcrollingY + scroll_amountY >= 0) {
                 this.codespace.lerpcrollingY = 0;
+            } else if (this.codespace.lerpcrollingY + scroll_amountY < max_codespace_scrollY) {
+                this.codespace.lerpcrollingY = max_codespace_scrollY;
             } else {
                 this.codespace.lerpcrollingY += scroll_amountY;
             }
             // X
             if (this.codespace.lerpcrollingX + scroll_amountX >= 0) {
                 this.codespace.lerpcrollingX = 0;
+            } else if (this.codespace.lerpcrollingX + scroll_amountX < max_codespace_scrollX) {
+                this.codespace.lerpcrollingX = max_codespace_scrollX;
             } else {
                 this.codespace.lerpcrollingX += scroll_amountX;
             }
@@ -332,23 +344,97 @@ public class CodeScreen extends Screen {
         return false;
     }
 
+
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        boolean hasClicked = false;
         Point mouse = new Point(mouseX, mouseY);
-        for (RenderableRectangleObject rect : this.listRect.siblings) {
-            Firemod.LOGGER.info("id: " + rect.clickID);
-            if (rect.isPointInside(mouse)) {
-                Firemod.LOGGER.info("CLICKED: " + rect.clickID);
-                this.focusedFunctionTabIndex = rect.clickID;
 
-                this.codespace.lerpcrollingY = 0;
-                this.codespace.scrollingY = 0;
+        // toggle button code
+        if (toggleButton.isPointInside(mouse)) {
+            Text displayMessage;
+            toggleButton.enabled = !toggleButton.enabled;
+            Firemod.functionDataManager.enableCodeViewer = toggleButton.enabled;
 
-                this.codespace.lerpcrollingX = 0;
-                this.codespace.scrollingX = 0;
-                break;
+            // why doesnt mutable text work omgistg
+            if (toggleButton.enabled) {
+                displayMessage = Text.literal("CodeViewer is now enabled.").withColor(0x81ff54);
+            } else {
+                displayMessage = Text.literal("CodeViewer is now disabled.").withColor(0xf25d55);
+            }
+            ChatManager.displayChatMessageToPlayer(displayMessage);
+        } else if (resetButton.isPointInside(mouse)) {
+            Firemod.functionDataManager.clear();
+            Firemod.functionFinder.checkedBlocks.clear();
+            Firemod.functionDataManager.focusedFunctionEntry = 0;
+            ChatManager.displayChatMessageToPlayer(Text.literal("Cleared CodeViewer Function List.").withColor(0xf25d55));
+        } else if (saveButton.isPointInside(mouse)) {
+            String saveName = saveCodeFileName;
+            Text displayMessage;
+            String codeData = "";
+            int i = 0;
+            for (FunctionEntry functionEntry : Firemod.functionDataManager.functionEntryArrayList) {
+                codeData = codeData + functionEntry.rawJsonString;
+                if (i != Firemod.functionDataManager.functionEntryArrayList.size()-1){
+                    codeData = codeData + "\n";
+                }
+                i++;
+            }
+
+            try {
+                FileManager.writeFile(saveName, codeData);
+                displayMessage = Text.literal("Wrote code to file: \"" + saveName + "\"").withColor(0x56baf5);
+            } catch (IOException e) {
+                displayMessage = Text.literal("Unable to write file to disk: " + e.getMessage()).withColor(0xf25d55);
+            }
+            ChatManager.displayChatMessageToPlayer(displayMessage);
+        } else if (uploadButton.isPointInside(mouse)) {
+            String saveName = saveCodeFileName;
+            Text displayMessage;
+            if (FileManager.exists(saveName)) {
+                try {
+                    String fileData = FileManager.readFile(saveName);
+                    String[] collection = fileData.split("\n");
+
+                    Firemod.functionDataManager.clear();
+                    for (String s : collection) {
+                        Firemod.functionDataManager.addFunction(s);
+                    }
+
+                    displayMessage = Text.literal("Successfully loaded code from file \"" + saveName + "\"").withColor(0xb592f7);
+                } catch (IOException | NullPointerException e) {
+                    displayMessage = Text.literal("Unable to load file to disk or invalid file: " + e.getMessage()).withColor(0xf25d55);
+                }
+            } else {
+                displayMessage = Text.literal("File \"" + saveName + "\" does not exist, unable to load code from disk.").withColor(0xf25d55);
+            }
+            ChatManager.displayChatMessageToPlayer(displayMessage);
+        }
+        if (this.sidebar.isPointInside(mouse)) {
+            for (RenderableRectangleObject rect : this.listRect.siblings) {
+                for (RenderableRectangleObject sibling : rect.siblings) {
+                    if (sibling.isPointInside(mouse)) {
+                        Firemod.functionDataManager.remove(sibling.clickID);
+                        int focusedTabLength = Firemod.functionDataManager.functionEntryArrayList.size()-1;
+                        if (focusedTabLength < Firemod.functionDataManager.focusedFunctionEntry) {
+                            Firemod.functionDataManager.focusedFunctionEntry = focusedTabLength;
+                        }
+                        hasClicked = true;
+                        break;
+                    }
+                }
+
+                if (hasClicked) { continue; }
+
+                if (rect.isPointInside(mouse)) {
+                    Firemod.functionDataManager.focusedFunctionEntry = rect.clickID;
+                    codespace.resetScrolling();
+                    break;
+                }
             }
         }
+        // function list code + delete func code
+
         codespace.mouseClicked(mouseX, mouseY, button);
 
         return super.mouseClicked(mouseX, mouseY, button);

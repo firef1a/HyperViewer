@@ -13,8 +13,15 @@ public class ChatManager {
             Objects.requireNonNull(Firemod.MC.getNetworkHandler()).sendChatMessage(content);
         }
     }
-    public static void sendMessageToPlayerDisplay(Text content) {
+    private static void sendMessageToPlayerDisplay(Text content) {
         assert Firemod.MC.player != null;
         Firemod.MC.player.sendMessage(content);
     }
+
+    public static void displayChatMessageToPlayer(Text content) {
+        if (Firemod.MC.player != null) {
+            Firemod.MC.player.sendMessage(Text.literal("[FIREMOD]").withColor(0xed743b).append(Text.literal(" ").append(content)));
+        }
+    }
+
 }

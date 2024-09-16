@@ -15,7 +15,7 @@ import net.minecraft.client.gui.widget.ScrollableWidget;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.text.Text;
 import net.minecraft.util.Util;
-import dev.fire.firemod.screen.widget.EditBox;
+
 //
 // Source code recreated from a .class file by IntelliJ IDEA
 // (powered by FernFlower decompiler) :3

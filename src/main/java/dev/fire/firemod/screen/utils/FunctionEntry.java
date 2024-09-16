@@ -1,9 +1,7 @@
 package dev.fire.firemod.screen.utils;
 
-import com.google.gson.JsonObject;
 import dev.fire.firemod.Firemod;
-import dev.fire.firemod.screen.CodeScreen;
-import dev.fire.firemod.screen.utils.templateUtils.CodeLine;
+import dev.fire.firemod.screen.utils.templates.CodeLine;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
@@ -113,8 +111,6 @@ public class FunctionEntry {
     }
     public static Template getTemplateFromJson(String rawJson) {
         Template response = Firemod.gson.fromJson(rawJson, Template.class);
-        Firemod.LOGGER.info(response.blocks.toString());
-
         return response;
 
     }
@@ -184,7 +180,7 @@ public class FunctionEntry {
                     appendText.append(Text.literal(block.action).withColor(0xbaa182));
 
                 } else if (Objects.equals(block.block, "select_obj")) {
-                    appendText.append(Text.literal(block.block));
+                    appendText.append(Text.literal("select"));
                     appendText.append(Text.literal("."));
                     appendText.append(Text.literal(block.action).withColor(0xc781de));
 
@@ -198,7 +194,7 @@ public class FunctionEntry {
                     appendText.append(Text.literal("."));
                     appendText.append(Text.literal(block.action).withColor(0xbad19b));
                 }  else if (Objects.equals(block.block, "set_var")) {
-                    appendText.append(Text.literal(block.block));
+                    appendText.append(Text.literal("set"));
                     appendText.append(Text.literal("."));
                     appendText.append(Text.literal(block.action).withColor(0xfffbc9));
                 } else if (Objects.equals(block.block, "game_action")) {
@@ -213,11 +209,7 @@ public class FunctionEntry {
                     appendText.append(Text.literal("call_process"));
                     appendText.append(Text.literal(" "));
                     appendText.append(Text.literal(block.data).withColor(typeColors.get("process")));
-                }
-
-
-
-                else if (Objects.equals(block.block, "repeat")) {
+                } else if (Objects.equals(block.block, "repeat")) {
                     appendText.append(Text.literal("repeat"));
                     appendText.append(Text.literal("."));
                     appendText.append(Text.literal(block.action).withColor(0x79d4cb));
@@ -361,6 +353,7 @@ public class FunctionEntry {
             if (has_colon) {
                 appendText.append(Text.literal(":"));
             }
+            String appendIndent = "";
             codeList.add(new CodeLine(appendText, indent));
             indent += changeIndent;
         }
@@ -371,13 +364,14 @@ public class FunctionEntry {
     public static FunctionEntry getFunctionEntryFromJson(String rawJsonString) {
         Template template = getTemplateFromJson(rawJsonString);
         ArrayList<CodeLine> codeList = getCodeListFromTemplate(template);
-        return new FunctionEntry(template.name, template.type, codeList);
+        return new FunctionEntry(template.name, template.type, rawJsonString, codeList);
     }
 
-    private FunctionEntry(String functionName, String functionType, ArrayList<CodeLine> formattedCodeList) {
+    private FunctionEntry(String functionName, String functionType, String rawJsonString, ArrayList<CodeLine> formattedCodeList) {
         this.functionName = functionName;
         this.functionType = functionType;
         this.formattedCodeList = formattedCodeList;
+        this.rawJsonString = rawJsonString;
         this.longestline = 0;
         int linelen = 0;
         int i = 0;

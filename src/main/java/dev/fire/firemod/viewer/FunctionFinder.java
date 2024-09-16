@@ -4,6 +4,7 @@ import dev.fire.firemod.Firemod;
 import dev.fire.firemod.devutils.Base64Utils;
 import dev.fire.firemod.devutils.GzipUtils;
 import dev.fire.firemod.devutils.MathUtils;
+import dev.fire.firemod.screen.utils.FunctionEntry;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.ItemStack;
@@ -19,21 +20,21 @@ import net.minecraft.util.math.Vec3d;
 import net.minecraft.network.packet.c2s.play.ClientCommandC2SPacket;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
-
-
-
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Base64;
+import java.util.HashMap;
+
 
 public class FunctionFinder {
     public ArrayList<Vec3i> checkedBlocks;
     public ArrayList<Vec3i> queueBlocks;
+    public HashMap<FunctionEntry, Vec3i> functionLocationMap;
     public boolean isModifying;
     public static int outstandingRequests;
     public FunctionFinder() {
         this.checkedBlocks = new ArrayList<>();
         this.queueBlocks = new ArrayList<>();
+        this.functionLocationMap = new HashMap<>();
         this.isModifying = false;
         outstandingRequests = 0;
     }
@@ -87,7 +88,7 @@ public class FunctionFinder {
     }
 
     public void tick() {
-        if (Firemod.MC.player != null && Firemod.MC.player.networkHandler != null && Firemod.MC.world != null && Firemod.MC.player.isCreative()) {
+        if (Firemod.MC.player != null && Firemod.MC.player.networkHandler != null && Firemod.MC.world != null && Firemod.MC.player.isCreative() && Firemod.functionDataManager.enableCodeViewer) {
 
             //Thread newThread = new Thread(() -> {
             //
