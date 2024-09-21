@@ -1,34 +1,34 @@
 {
 	"schemaVersion": 1,
-	"id": "firemod",
+	"id": "hyperviewer",
 	"version": "${version}",
-	"name": "firemod",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"name": "HyperViewer",
+	"description": "Allows you to view DiamondFire code in text form! This is honestly not a very practical mod but its funny.",
 	"authors": [
-		"Me!"
+		"firef1a"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://github.com/firef1a/HyperViewer",
+		"sources": "https://github.com/firef1a/HyperViewer"
 	},
 	"license": "CC0-1.0",
-	"icon": "assets/firemod/icon.png",
+	"icon": "assets/hyperviewer/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"dev.fire.firemod.Firemod"
+			"dev.fire.hyperviewer.HyperViewer"
 		],
 		"client": [
-			"dev.fire.firemod.client.FiremodClient"
+			"dev.fire.hyperviewer.client.HyperViewerClient"
 		]
 	},
 	"mixins": [
-		"firemod.mixins.json"
+		"hyperviewer.mixins.json"
 	],
 	"depends": {
 		"fabricloader": ">=0.15.11",
 		"minecraft": "~1.20.4",
-		"java": ">=17",
+		"java": ">=21",
 		"fabric-api": "*"
 	},
 	"suggests": {
