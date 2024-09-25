@@ -26,6 +26,15 @@ public class FunctionEntry {
             entry("func",0x758eff)
     );
 
+    public static Map<String, String> bracketTypes = Map.ofEntries(
+            entry("b1","["),
+            entry("b2","]"),
+            entry("cb1","{"),
+            entry("cb2","}")
+
+
+    );
+
     public static class Location {
         double x;
         double y;
@@ -123,12 +132,16 @@ public class FunctionEntry {
         boolean has_colon;
         boolean has_args;
         boolean forceNoBrackets;
+
         for (CodeBlock block : template.blocks) {
             changeIndent = 0;
             has_colon = false;
             forceNoBrackets = false;
             MutableText appendText = Text.empty();
             MutableText endText = Text.empty();
+            String bracketStart = bracketTypes.get("b1");
+            String bracketEnd = bracketTypes.get("b2");
+
 
             // indents
 
@@ -195,8 +208,13 @@ public class FunctionEntry {
                     appendText.append(Text.literal(block.action).withColor(0xbad19b));
                 }  else if (Objects.equals(block.block, "set_var")) {
                     appendText.append(Text.literal("set"));
-                    appendText.append(Text.literal("."));
-                    appendText.append(Text.literal(block.action).withColor(0xfffbc9));
+                    if (block.action == "CreateList" || block.action == "CreateDict") {
+
+                    } else {
+                        appendText.append(Text.literal("."));
+                        appendText.append(Text.literal(block.action).withColor(0xfffbc9));
+                    }
+
                 } else if (Objects.equals(block.block, "game_action")) {
                     appendText.append(Text.literal("game"));
                     appendText.append(Text.literal("."));
@@ -360,6 +378,8 @@ public class FunctionEntry {
 
         return codeList;
     }
+
+
 
     public static FunctionEntry getFunctionEntryFromJson(String rawJsonString) {
         Template template = getTemplateFromJson(rawJsonString);
