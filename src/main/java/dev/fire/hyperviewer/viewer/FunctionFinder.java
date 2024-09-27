@@ -23,6 +23,7 @@ import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Scanner;
 
 
 public class FunctionFinder {
@@ -37,6 +38,7 @@ public class FunctionFinder {
         this.functionLocationMap = new HashMap<>();
         this.isModifying = false;
         outstandingRequests = 0;
+
     }
 
     public static void handlePacket(Packet packet) throws IOException {
