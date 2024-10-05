@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 
+import static dev.fire.hyperviewer.devutils.MathUtils.roundToDecimalPlaces;
 import static java.util.Map.entry;
 
 public class FunctionEntry {
@@ -275,6 +276,8 @@ public class FunctionEntry {
             }
 
             has_args = false;
+
+            int decimal_places = 2;
             // add args
             if (block.args != null) {
                 if (block.args.items != null) {
@@ -306,11 +309,11 @@ public class FunctionEntry {
                             } else if (Objects.equals(itemData.id, "txt") || Objects.equals(itemData.id, "comp")) {
                                 argText.append(Text.literal("\""+itemData.data.name.replace("Â§", "&")+"\"").withColor(Formatting.AQUA.getColorValue()));
                             } else if (Objects.equals(itemData.id, "vec")) {
-                                argText.append(Text.literal("v(" + itemData.data.x  + ", " + itemData.data.y + ", " + itemData.data.z + ")").withColor(0x90e0d8));
+                                argText.append(Text.literal("v(" + roundToDecimalPlaces(Double.parseDouble(itemData.data.x), decimal_places)  + ", " + roundToDecimalPlaces(Double.parseDouble(itemData.data.y), decimal_places) + ", " + roundToDecimalPlaces(Double.parseDouble(itemData.data.z), decimal_places) + ")").withColor(0x90e0d8));
                             } else if (Objects.equals(itemData.id, "loc")) {
-                                String locText = "[" + itemData.data.loc.x  + ", " + itemData.data.loc.y + ", " + itemData.data.loc.z;
+                                String locText = "[" + roundToDecimalPlaces(Double.parseDouble(String.valueOf(itemData.data.loc.x)), decimal_places)  + ", " + roundToDecimalPlaces(Double.parseDouble(String.valueOf(itemData.data.loc.y)), decimal_places) + ", " + roundToDecimalPlaces(Double.parseDouble(String.valueOf(itemData.data.loc.z)), decimal_places);
                                 if (itemData.data.loc.pitch != 0 || itemData.data.loc.yaw != 0) {
-                                    locText = locText + ", " + itemData.data.loc.pitch + ", " + itemData.data.loc.yaw;
+                                    locText = locText + ", " + roundToDecimalPlaces(Double.parseDouble(String.valueOf(itemData.data.loc.pitch)), decimal_places) + ", " + roundToDecimalPlaces(Double.parseDouble(String.valueOf(itemData.data.loc.yaw)), decimal_places);
                                 }
                                 locText = locText + "]";
                                 argText.append(Text.literal(locText).withColor(0xa6e048));
