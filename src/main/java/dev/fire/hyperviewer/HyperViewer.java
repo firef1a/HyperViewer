@@ -6,31 +6,12 @@ import dev.fire.hyperviewer.screen.chat.ChatLogger;
 import dev.fire.hyperviewer.viewer.FunctionDataManager;
 import dev.fire.hyperviewer.viewer.FunctionFinder;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandManager;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.network.ServerInfo;
-import net.minecraft.item.map.MapState;
-import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3i;
-import net.minecraft.world.World;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import java.util.*;
-
-// word()
-// literal("foo")
-// argument("bar", word())
-// Import everything in the CommandManager
-
 
 public class HyperViewer implements ModInitializer {
 	public static final String MOD_NAME = "HyperViewer";

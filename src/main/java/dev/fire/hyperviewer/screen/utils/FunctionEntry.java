@@ -5,7 +5,6 @@ import dev.fire.hyperviewer.screen.utils.templates.CodeLine;
 import net.minecraft.text.MutableText;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
-
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;

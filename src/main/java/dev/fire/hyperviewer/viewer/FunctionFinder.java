@@ -23,8 +23,6 @@ import net.minecraft.network.packet.s2c.play.ScreenHandlerSlotUpdateS2CPacket;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Scanner;
-
 
 public class FunctionFinder {
     public ArrayList<Vec3i> checkedBlocks;
